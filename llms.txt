@@ -13,9 +13,21 @@
 
 - [Home](https://ghar-raksha.pages.dev/): what the system is, how it works in 5 steps, zones, costs, honest limits, FAQ.
 - [Radar Dashboard](https://ghar-raksha.pages.dev/dashboard): live radar map of the house, 4 zones, arm/disarm, alert log. DEMO MODE shows simulated data; LIVE MODE connects to the ESP32 over the local WiFi (/status, /arm, /disarm).
+- [Apna Map Banao / Map Editor](https://ghar-raksha.pages.dev/map-editor): build your own authentic house map (rooms, courtyard, gate) on a 100x100 grid and save it in the browser (localStorage key gharRaksha.map.v1). The dashboard then shows your map instead of the default one, in DEMO and LIVE mode.
 - [Setup Guide](https://ghar-raksha.pages.dev/setup): step-by-step wiring (pin tables matching the firmware exactly), code upload via Arduino IDE, dashboard connection, zone testing, nightly arming routine.
 - [Shopping List](https://ghar-raksha.pages.dev/shopping): parts with Pakistan prices checked 25 Nov 2026 (digilog.pk, Daraz.pk, robochacha.pk, mreeco.com, circuithub.pk).
 - [Downloads](https://ghar-raksha.pages.dev/downloads): ESP32 firmware source (home_guard.ino) and pre-compiled firmware.bin + bootloader.bin + partitions.bin with esptool flash command.
+
+## Map Editor (Apna Map Banao)
+
+The default dashboard map is one house (Kamra 1, Kamra 2, Sehan, Main Gate).
+Every house is different, so each user can draw their own authentic map in
+the editor: name each zone, pick its type (Kamra / Sehan / Main Gate / Bahar /
+Aur), place it on a 100x100 grid by tapping the canvas or typing numbers.
+Saving writes {houseName, zones:[{name,type,x,y,w,h}]} to localStorage; the
+dashboard loads it on start and uses those zones (names, rectangles, types)
+for the map, zone list, demo walk and alert log. A corrupt or missing save
+falls back to the default map, so the dashboard never breaks.
 
 ## Costs (Pakistan, prices checked 25 Nov 2026)
 

@@ -132,6 +132,7 @@
   &nbsp;·&nbsp;<a href="setup.html" style="color:#22d3ee;">Setup / Wiring</a>
   &nbsp;·&nbsp;<a href="shopping.html" style="color:#22d3ee;">Shopping List</a>
   &nbsp;·&nbsp;<a href="downloads.html" style="color:#22d3ee;">Downloads</a>
+  &nbsp;·&nbsp;<a href="map-editor.html" style="color:#22d3ee;">Apna Map</a>
 </nav>
 
 <header>
@@ -146,7 +147,7 @@
 <div class="layout">
   <!-- ======= MAP ======= -->
   <div class="panel">
-    <h2>Ghar ka Naqsha — Live Radar</h2>
+    <h2 id="mapTitle">Ghar ka Naqsha — Live Radar</h2>
     <canvas id="map" width="640" height="500"></canvas>
     <div class="legend">
       <span><i style="background:#ef4444"></i>Banda (presence)</span>
@@ -154,6 +155,7 @@
       <span><i style="background:#22c55e"></i>Safe / khali</span>
       <span><i style="background:#22d3ee"></i>Sensor</span>
     </div>
+    <div style="margin-top:8px;font-size:13px;color:#7fa8b3;"><span id="mapNote">Ye map default hai (aik ghar ka naqsha).</span> <a href="map-editor.html" style="color:#22d3ee;">Apna Map Banao / Badlo</a> — apne ghar ka asal naqsha banao, dashboard wohi dikhayega.</div>
   </div>
 
   <!-- ======= SIDE PANELS ======= -->
@@ -209,34 +211,99 @@
    ============================================================ */
 
 // ---- Zones: naqshay par har zone ka rectangle (canvas 640x500) ----
-var ZONES = [
-  { id: 0, name: "Main Gate",  x: 270, y: 400, w: 100, h: 55,  sensor: { x: 320, y: 427 },
+// DEFAULT MAP: ye Zain ka ghar hai (Kamra 1, Kamra 2, Sehan, Main Gate).
+// Agar user ne "Apna Map Banao" editor (map-editor.html) se apna map save
+// kiya ho to wo localStorage (gharRaksha.map.v1) se load hota hai aur ye
+// default map istemal nahi hota. Kharab save ho to bhi default map chalta hai.
+var DEFAULT_ZONES = [
+  { id: 0, name: "Main Gate", type: "Main Gate", x: 270, y: 400, w: 100, h: 55, sensor: { x: 320, y: 427 },
     blip: { x: 320, y: 428 } },
-  { id: 1, name: "Sehan",      x: 40,  y: 220, w: 560, h: 180, sensor: { x: 320, y: 310 },
+  { id: 1, name: "Sehan", type: "Sehan", x: 40, y: 220, w: 560, h: 180, sensor: { x: 320, y: 310 },
     blip: { x: 320, y: 310 } },
-  { id: 2, name: "Kamra 1",    x: 40,  y: 40,  w: 240, h: 160, sensor: { x: 160, y: 60 },
+  { id: 2, name: "Kamra 1", type: "Kamra", x: 40, y: 40, w: 240, h: 160, sensor: { x: 160, y: 60 },
     blip: { x: 160, y: 120 } },
-  { id: 3, name: "Kamra 2",    x: 360, y: 40,  w: 240, h: 160, sensor: { x: 480, y: 60 },
+  { id: 3, name: "Kamra 2", type: "Kamra", x: 360, y: 40, w: 240, h: 160, sensor: { x: 480, y: 60 },
     blip: { x: 480, y: 120 } }
 ];
 
+// ---- Apna map (localStorage) ----
+// Editor 100x100 grid par map banata hai; yahan canvas (640x500) mein badla jata hai.
+// localStorage read try/catch mein hai — kharab ya adhoora save kabhi
+// dashboard nahi torega, default map chalega.
+var MAP_KEY = "gharRaksha.map.v1";
+function loadCustomMap() {
+  try {
+    var raw = localStorage.getItem(MAP_KEY);
+    if (!raw) return null;
+    var data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.zones) || data.zones.length === 0) return null;
+    var zones = [];
+    for (var i = 0; i < data.zones.length; i++) {
+      var z = data.zones[i];
+      if (!z || typeof z.name !== "string" || !z.name.trim()) return null;
+      var x = Number(z.x), y = Number(z.y), w = Number(z.w), h = Number(z.h);
+      if (!isFinite(x) || !isFinite(y) || !isFinite(w) || !isFinite(h)) return null;
+      if (w <= 0 || h <= 0) return null;
+      zones.push({
+        id: i,
+        name: z.name.trim(),
+        type: (typeof z.type === "string" && z.type) ? z.type : "Aur",
+        x: Math.round(x / 100 * 640),
+        y: Math.round(y / 100 * 500),
+        w: Math.round(w / 100 * 640),
+        h: Math.round(h / 100 * 500),
+        sensor: { x: Math.round((x + w / 2) / 100 * 640), y: Math.round((y + 6) / 100 * 500) },
+        blip: { x: Math.round((x + w / 2) / 100 * 640), y: Math.round((y + h / 2) / 100 * 500) }
+      });
+    }
+    return { houseName: (typeof data.houseName === "string" ? data.houseName.trim() : ""), zones: zones };
+  } catch (e) {
+    return null;
+  }
+}
+var customMap = loadCustomMap();
+var ZONES = customMap ? customMap.zones : DEFAULT_ZONES;
+var houseName = customMap ? customMap.houseName : "";
+
+// Radar ka markaz: Sehan zone ka centre, warna sab se bari zone ka centre.
+var RADAR_C = (function () {
+  var best = null;
+  ZONES.forEach(function (z) { if (z.type === "Sehan") best = z; });
+  if (!best) ZONES.forEach(function (z) { if (!best || z.w * z.h > best.w * best.h) best = z; });
+  return best ? { x: best.blip.x, y: best.blip.y } : { x: 320, y: 250 };
+})();
+
 // ---- Demo mein nakli chor ka rasta (waypoints), pause seconds ke sath ----
-var DEMO_PATH = [
-  { x: 320, y: 486, pause: 3 },  // bahar, gate ke samne
-  { x: 320, y: 428, pause: 1 },  // Main Gate
-  { x: 320, y: 320, pause: 1 },  // Sehan
-  { x: 160, y: 310, pause: 0 },
-  { x: 160, y: 210, pause: 1 },  // Kamra 1 ka darwaza
-  { x: 160, y: 120, pause: 5 },  // Kamra 1 ke andar (rukta hai)
-  { x: 160, y: 210, pause: 0 },
-  { x: 320, y: 320, pause: 1 },  // wapas Sehan
-  { x: 480, y: 210, pause: 1 },  // Kamra 2 ka darwaza
-  { x: 480, y: 120, pause: 5 },  // Kamra 2 ke andar
-  { x: 480, y: 210, pause: 0 },
-  { x: 320, y: 320, pause: 1 },
-  { x: 320, y: 428, pause: 1 },  // wapas Gate
-  { x: 320, y: 486, pause: 4 }   // bahar nikal gaya
-];
+// Default map ke liye tayyar rasta; custom map ke liye rasta zones ke
+// centre se khud ban jata hai (pehle bahar, phir har zone, phir bahar).
+// Zone ke naam kahin hardcode nahi — rasta aur log hamesha map data se aate hain.
+function buildDemoPath() {
+  if (!customMap) {
+    return [
+      { x: 320, y: 486, pause: 3 },  // bahar, gate ke samne
+      { x: 320, y: 428, pause: 1 },  // Main Gate
+      { x: 320, y: 320, pause: 1 },  // Sehan
+      { x: 160, y: 310, pause: 0 },
+      { x: 160, y: 210, pause: 1 },  // Kamra 1 ka darwaza
+      { x: 160, y: 120, pause: 5 },  // Kamra 1 ke andar (rukta hai)
+      { x: 160, y: 210, pause: 0 },
+      { x: 320, y: 320, pause: 1 },  // wapas Sehan
+      { x: 480, y: 210, pause: 1 },  // Kamra 2 ka darwaza
+      { x: 480, y: 120, pause: 5 },  // Kamra 2 ke andar
+      { x: 480, y: 210, pause: 0 },
+      { x: 320, y: 320, pause: 1 },
+      { x: 320, y: 428, pause: 1 },  // wapas Gate
+      { x: 320, y: 486, pause: 4 }   // bahar nikal gaya
+    ];
+  }
+  var pts = [{ x: 320, y: 486, pause: 3 }]; // bahar, gate ke samne
+  ZONES.forEach(function (z) {
+    pts.push({ x: z.blip.x, y: z.blip.y, pause: 2 });
+  });
+  pts.push({ x: 320, y: 486, pause: 4 }); // bahar nikal gaya
+  return pts;
+}
+var DEMO_PATH = buildDemoPath();
 
 var canvas = document.getElementById("map");
 var ctx = canvas.getContext("2d");
@@ -281,6 +348,12 @@ function log(msg, isAlert) {
   while (ul.children.length > 50) ul.removeChild(ul.lastChild);
 }
 
+/* HTML escape — zone ke naam user ke likhe ho sakte hain (custom map),
+   is liye innerHTML mein daalne se pehle escape zaroori hai. */
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 /* ---------------- Zone list (side panel) ---------------- */
 function renderZoneList() {
   var box = document.getElementById("zones");
@@ -295,7 +368,7 @@ function renderZoneList() {
     else if (s.motion) { row.className += " warn"; dotClass = "dot amber"; stateText = "Movement"; }
     if (s.door) stateText += " | Darwaza khula";
     row.innerHTML = '<span class="' + dotClass + '"></span>' +
-      '<span class="zoneName">' + z.name + '</span>' +
+      '<span class="zoneName">' + esc(z.name) + '</span>' +
       '<span class="zoneState">' + stateText + '</span>';
     box.appendChild(row);
   });
@@ -461,8 +534,9 @@ function stepDemo(dt) {
   if (zi >= 0) {
     zoneState[zi].presence = true;
     zoneState[zi].motion = person.moving;
-    // Gate / kamra darwaza "khula" dikhate hain jab banda us zone mein ho (demo)
-    if (zi === 0 || zi === 2 || zi === 3) zoneState[zi].door = true;
+    // Darwaza "khula" dikhate hain jab banda Gate ya Kamra type zone mein ho (demo).
+    // Type se faisla hota hai, zone number se nahi — is liye custom map mein bhi chalta hai.
+    if (ZONES[zi].type === "Main Gate" || ZONES[zi].type === "Kamra") zoneState[zi].door = true;
   }
   if (zi !== lastZoneOfPerson) {
     if (zi >= 0) {
@@ -500,8 +574,8 @@ function draw() {
   ctx.fillStyle = "#7fa8b3"; ctx.font = "11px sans-serif";
   ctx.fillText("BOUNDARY WALL", 26, 34);
 
-  // Radar rings + sweep (Sehan ke centre se)
-  var cx = 320, cy = 310;
+  // Radar rings + sweep (Sehan ke centre se; custom map mein sab se bari zone se)
+  var cx = RADAR_C.x, cy = RADAR_C.y;
   ctx.strokeStyle = "rgba(34,211,238,0.18)";
   [60, 120, 180, 240].forEach(function (r) {
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
@@ -589,6 +663,10 @@ function loop() {
 
 /* ---------------- Start ---------------- */
 renderZoneList();
+if (customMap) {
+  if (houseName) document.getElementById("mapTitle").textContent = "Ghar ka Naqsha — " + houseName;
+  document.getElementById("mapNote").textContent = "Ye aap ka apna banaya hua map hai.";
+}
 setArmed(false);
 log("Ghar Raksha dashboard khul gaya. DEMO MODE mein hai — nakli chor gate se andar aayega, sehan aur kamron mein ghoomega.");
 log("Asal system ke liye: ESP32 + sensor lagao, phir LIVE MODE dabao aur ESP32 ka IP likho.");

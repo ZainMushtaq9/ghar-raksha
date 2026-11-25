@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apna Map Banao — Ghar Raksha | Apne Ghar ka Asal Naqsha</title>
+<meta name="description" content="Apna Map Banao: apne ghar ka asal naqsha banao — kamray, sehan aur main gate waisay rakho jaisay asal mein hain. Map browser mein save hota hai aur Ghar Raksha dashboard wohi map dikhata hai.">
+<link rel="canonical" href="https://ghar-raksha.pages.dev/map-editor">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ghar Raksha">
+<meta property="og:title" content="Apna Map Banao — Ghar Raksha">
+<meta property="og:description" content="Apne ghar ka asal naqsha banao — kamray, sehan aur main gate waisay rakho jaisay asal mein hain. Dashboard wohi map dikhayega.">
+<meta property="og:url" content="https://ghar-raksha.pages.dev/map-editor">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apna Map Banao — Ghar Raksha">
+<meta name="twitter:description" content="Apne ghar ka asal naqsha banao aur dashboard par dekho.">
+<link rel="stylesheet" href="style.css">
+<style>
+  #preview { width: 100%; height: auto; display: block; background: #06141b; border-radius: 6px; border: 1px solid var(--border); touch-action: manipulation; }
+  .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .formGrid label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .formGrid input[type="text"], .formGrid input[type="number"], .formGrid select {
+    width: 100%; background: #06141b; border: 1px solid var(--border); color: var(--text);
+    padding: 9px 10px; border-radius: 6px; font-size: 15px;
+  }
+  .formGrid input[type="range"] { width: 100%; accent-color: var(--cyan); }
+  .full { grid-column: 1 / -1; }
+  .zoneItem {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 10px; margin-bottom: 6px; border-radius: 6px;
+    background: var(--panel2); border: 1px solid var(--border); font-size: 14px;
+  }
+  .zoneItem .swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .zoneItem .zname { font-weight: 700; cursor: pointer; text-decoration: underline dotted; }
+  .zoneItem .zmeta { color: var(--muted); font-size: 13px; }
+  .zoneItem button { margin-left: auto; padding: 5px 10px; font-size: 13px; }
+  #msg { font-size: 14px; min-height: 22px; margin: 8px 0; }
+  #msg.ok { color: #bbf7d0; }
+  #msg.err { color: #fca5a5; }
+  .btn.danger { background: #7f1d1d; border-color: var(--red); }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>GHAR RAKSHA <span>// APNA MAP BANAO</span></h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="setup.html">Setup Guide</a>
+      <a href="shopping.html">Shopping List</a>
+      <a href="downloads.html">Downloads</a>
+      <a href="map-editor.html" class="active">Apna Map</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="warn" style="margin-top:16px;">
+    <b>Apne ghar ka asal naqsha banao</b> — kamray, sehan aur main gate waisay rakho
+    jaisay asal mein hain. Dashboard par jo map abhi dikhta hai (Kamra 1, Kamra 2,
+    Sehan, Main Gate) wo aik ghar ka hai — har ghar ka naqsha alag hota hai.
+  </div>
+
+  <h2>Kaise banayen (3 steps)</h2>
+  <ol class="steps">
+    <li><b>Ghar ka naam likho</b> — masalan "Mera Ghar".</li>
+    <li><b>Zone add karo</b> — naam likho (masalan "Bara Kamra"), type chuno, phir neeche canvas par tap karo jahan zone ho, ya x / y / size number likho. "Zone Add Karo" dabao. Aik aik kar ke saare kamray, sehan aur gate add karo.</li>
+    <li><b>"Map Save Karo" dabao</b> — map aap ke browser mein save ho jata hai. Phir "Dashboard par Dekho" se dekho — dashboard ab aap ka map dikhayega.</li>
+  </ol>
+
+  <h2>Ghar ka naam</h2>
+  <div class="formGrid">
+    <div class="full">
+      <label for="houseName">Ghar ka naam (masalan "Mera Ghar")</label>
+      <input type="text" id="houseName" placeholder="Mera Ghar" maxlength="40">
+    </div>
+  </div>
+
+  <h2>Map Preview</h2>
+  <canvas id="preview" width="640" height="500"></canvas>
+  <p class="muted">Canvas par tap karo — naye zone ki jagah wahan set ho jayegi. Neeche form mein naam aur size likh kar "Zone Add Karo" dabao.</p>
+
+  <h2>Naya Zone Add Karo</h2>
+  <div class="formGrid">
+    <div>
+      <label for="zName">Zone ka naam (masalan "Bara Kamra")</label>
+      <input type="text" id="zName" placeholder="Bara Kamra" maxlength="30">
+    </div>
+    <div>
+      <label for="zType">Type</label>
+      <select id="zType">
+        <option value="Kamra">Kamra</option>
+        <option value="Sehan">Sehan</option>
+        <option value="Main Gate">Main Gate</option>
+        <option value="Bahar">Bahar</option>
+        <option value="Aur">Aur</option>
+      </select>
+    </div>
+    <div>
+      <label for="zx">X — left se (0–100)</label>
+      <input type="number" id="zx" min="0" max="100" value="30">
+      <input type="range" id="sx" min="0" max="100" value="30">
+    </div>
+    <div>
+      <label for="zy">Y — upar se (0–100)</label>
+      <input type="number" id="zy" min="0" max="100" value="30">
+      <input type="range" id="sy" min="0" max="100" value="30">
+    </div>
+    <div>
+      <label for="zw">Chaurai — width (1–100)</label>
+      <input type="number" id="zw" min="1" max="100" value="30">
+      <input type="range" id="sw" min="1" max="100" value="30">
+    </div>
+    <div>
+      <label for="zh">Unchai — height (1–100)</label>
+      <input type="number" id="zh" min="1" max="100" value="25">
+      <input type="range" id="sh" min="1" max="100" value="25">
+    </div>
+  </div>
+  <button class="btn" type="button" onclick="addZone()">Zone Add Karo</button>
+  <div id="msg"></div>
+
+  <h2>Zones ki List</h2>
+  <div id="zoneList"></div>
+  <p class="muted">Zone ke naam par tap karo to wo form mein aa jata hai — badal kar dobara "Zone Add Karo" dabao. Delete ke liye ✕ dabao.</p>
+
+  <h2>Save karo</h2>
+  <p>
+    <button class="btn" type="button" onclick="saveMap()">Map Save Karo</button>
+    <a class="btn ghost" href="dashboard.html">Dashboard par Dekho</a>
+    <button class="btn ghost danger" type="button" onclick="resetDefault()">Default Map Wapas Lao</button>
+  </p>
+  <p class="muted">Map sirf is browser / phone mein save hota hai (localStorage).
+  Doosre phone ya browser par ye map nahi dikhega — wahan dobara banana hoga.
+  Dashboard kholte hi yehi map lag jata hai — DEMO aur LIVE dono mein.</p>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <b>Ghar Raksha</b> — aik DIY home security project (ESP32 + sensors).
+    Apna map banao, save karo, dashboard par dekho.
+  </div>
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   APNA MAP BANAO — Ghar Raksha map editor
+   - Map 100x100 grid par banta hai, localStorage mein save hota hai
+     (key: gharRaksha.map.v1), dashboard usi ko parhta hai.
+   - Koi internet / CDN nahi chahiye — sab kuch is file mein hai.
+   ============================================================ */
+var MAP_KEY = "gharRaksha.map.v1";
+var TYPE_COLORS = {
+  "Kamra": "#22d3ee",
+  "Sehan": "#22c55e",
+  "Main Gate": "#f59e0b",
+  "Bahar": "#7fa8b3",
+  "Aur": "#a78bfa"
+};
+// Default map — dashboard wala hi (grid 100x100 mein).
+var DEFAULT_ZONES = [
+  { name: "Main Gate", type: "Main Gate", x: 42, y: 80, w: 16, h: 11 },
+  { name: "Sehan", type: "Sehan", x: 6, y: 44, w: 88, h: 36 },
+  { name: "Kamra 1", type: "Kamra", x: 6, y: 8, w: 38, h: 32 },
+  { name: "Kamra 2", type: "Kamra", x: 56, y: 8, w: 38, h: 32 }
+];
+
+var zones = [];
+var houseName = "";
+
+function el(id) { return document.getElementById(id); }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function num(v, dflt) {
+  var n = Number(v);
+  return isFinite(n) ? n : dflt;
+}
+function showMsg(text, ok) {
+  var m = el("msg");
+  m.textContent = text;
+  m.className = ok ? "ok" : "err";
+}
+
+/* ---------------- Load / validate ---------------- */
+function validZone(z) {
+  if (!z || typeof z.name !== "string" || !z.name.trim()) return false;
+  var x = Number(z.x), y = Number(z.y), w = Number(z.w), h = Number(z.h);
+  if (!isFinite(x) || !isFinite(y) || !isFinite(w) || !isFinite(h)) return false;
+  if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > 100 || y + h > 100) return false;
+  return true;
+}
+function loadSaved() {
+  try {
+    var raw = localStorage.getItem(MAP_KEY);
+    if (!raw) return false;
+    var data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.zones) || data.zones.length === 0) return false;
+    for (var i = 0; i < data.zones.length; i++) {
+      if (!validZone(data.zones[i])) return false;
+    }
+    zones = data.zones.map(function (z) {
+      return { name: z.name.trim(), type: (typeof z.type === "string" && z.type) ? z.type : "Aur",
+        x: Number(z.x), y: Number(z.y), w: Number(z.w), h: Number(z.h) };
+    });
+    houseName = (typeof data.houseName === "string") ? data.houseName.trim() : "";
+    return true;
+  } catch (e) {
+    return false; // kharab save — default map dikhao, page kabhi na toote
+  }
+}
+
+/* ---------------- Preview (canvas) ---------------- */
+var canvas = el("preview");
+var ctx = canvas.getContext("2d");
+function ghostRect() {
+  var x = num(el("zx").value, -1), y = num(el("zy").value, -1);
+  var w = num(el("zw").value, -1), h = num(el("zh").value, -1);
+  if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 100 || y + h > 100) return null;
+  return { x: x, y: y, w: w, h: h };
+}
+function drawPreview() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Grid — har 10 units par halki lakeer
+  ctx.strokeStyle = "rgba(34,211,238,0.06)";
+  ctx.lineWidth = 1;
+  for (var gx = 0; gx <= 100; gx += 10) {
+    ctx.beginPath(); ctx.moveTo(gx / 100 * 640, 0); ctx.lineTo(gx / 100 * 640, 500); ctx.stroke();
+  }
+  for (var gy = 0; gy <= 100; gy += 10) {
+    ctx.beginPath(); ctx.moveTo(0, gy / 100 * 500); ctx.lineTo(640, gy / 100 * 500); ctx.stroke();
+  }
+  // Boundary wall (dashboard jaisi)
+  ctx.strokeStyle = "#155e75"; ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(20, 460); ctx.lineTo(20, 20); ctx.lineTo(620, 20); ctx.lineTo(620, 460);
+  ctx.lineTo(370, 460); ctx.moveTo(270, 460); ctx.lineTo(20, 460);
+  ctx.stroke();
+  ctx.fillStyle = "#7fa8b3"; ctx.font = "11px sans-serif";
+  ctx.fillText("BOUNDARY WALL", 26, 34);
+  // Zones
+  zones.forEach(function (z) {
+    var px = z.x / 100 * 640, py = z.y / 100 * 500;
+    var pw = z.w / 100 * 640, ph = z.h / 100 * 500;
+    var col = TYPE_COLORS[z.type] || TYPE_COLORS["Aur"];
+    ctx.fillStyle = col + "2E"; // halka bhara hua
+    ctx.fillRect(px, py, pw, ph);
+    ctx.strokeStyle = col; ctx.lineWidth = 2;
+    ctx.strokeRect(px, py, pw, ph);
+    ctx.fillStyle = "#d7f3f8"; ctx.font = "bold 14px sans-serif";
+    ctx.fillText(z.name, px + 8, py + 20);
+    ctx.font = "11px sans-serif"; ctx.fillStyle = "#7fa8b3";
+    ctx.fillText(z.type, px + 8, py + 37);
+  });
+  // Ghost — form mein jo zone ban raha hai
+  var g = ghostRect();
+  if (g) {
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 2;
+    ctx.strokeRect(g.x / 100 * 640, g.y / 100 * 500, g.w / 100 * 640, g.h / 100 * 500);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#fcd34d"; ctx.font = "bold 12px sans-serif";
+    ctx.fillText("naya zone", g.x / 100 * 640 + 8, g.y / 100 * 500 + 20);
+  }
+  ctx.fillStyle = "#7fa8b3"; ctx.font = "11px sans-serif";
+  ctx.fillText("BAHAR (gali)", 280, 490);
+}
+
+/* ---------------- Zone list ---------------- */
+function renderList() {
+  var box = el("zoneList");
+  box.innerHTML = "";
+  if (zones.length === 0) {
+    var p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = "Abhi koi zone nahi — upar se pehla zone add karo.";
+    box.appendChild(p);
+    return;
+  }
+  zones.forEach(function (z, i) {
+    var row = document.createElement("div");
+    row.className = "zoneItem";
+    var sw = document.createElement("span");
+    sw.className = "swatch";
+    sw.style.background = TYPE_COLORS[z.type] || TYPE_COLORS["Aur"];
+    var nm = document.createElement("span");
+    nm.className = "zname";
+    nm.textContent = z.name;
+    nm.title = "Edit ke liye tap karo";
+    nm.onclick = function () { editZone(i); };
+    var meta = document.createElement("span");
+    meta.className = "zmeta";
+    meta.textContent = z.type + " — x:" + z.x + " y:" + z.y + " w:" + z.w + " h:" + z.h;
+    var del = document.createElement("button");
+    del.type = "button";
+    del.textContent = "✕ Delete";
+    del.onclick = function () { delZone(i); };
+    row.appendChild(sw);
+    row.appendChild(nm);
+    row.appendChild(meta);
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+
+/* ---------------- Form ---------------- */
+function readForm() {
+  var name = el("zName").value.trim();
+  if (!name) { showMsg("Zone ka naam likho, masalan 'Bara Kamra'.", false); return null; }
+  var x = num(el("zx").value, -1), y = num(el("zy").value, -1);
+  var w = num(el("zw").value, -1), h = num(el("zh").value, -1);
+  if (x < 0 || y < 0 || w <= 0 || h <= 0) {
+    showMsg("x, y, chaurai aur unchai mein sahi number likho (w/h 0 se bara ho).", false);
+    return null;
+  }
+  if (x + w > 100 || y + h > 100) {
+    showMsg("Zone grid (100x100) se bahar ja raha hai — x + chaurai aur y + unchai 100 se zyada nahi ho sakti.", false);
+    return null;
+  }
+  return { name: name, type: el("zType").value, x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+}
+function syncPair(numId, rangeId) {
+  var n = el(numId), r = el(rangeId);
+  n.addEventListener("input", function () { r.value = n.value; drawPreview(); });
+  r.addEventListener("input", function () { n.value = r.value; drawPreview(); });
+}
+function loadForm(z) {
+  el("zName").value = z.name;
+  el("zType").value = z.type;
+  el("zx").value = z.x; el("sx").value = z.x;
+  el("zy").value = z.y; el("sy").value = z.y;
+  el("zw").value = z.w; el("sw").value = z.w;
+  el("zh").value = z.h; el("sh").value = z.h;
+}
+
+/* ---------------- Actions ---------------- */
+function addZone() {
+  var z = readForm();
+  if (!z) return;
+  zones.push(z);
+  el("zName").value = "";
+  renderList();
+  drawPreview();
+  showMsg("Zone add ho gaya: " + z.name + ". Ab 'Map Save Karo' dabao.", true);
+}
+function delZone(i) {
+  var name = zones[i].name;
+  zones.splice(i, 1);
+  renderList();
+  drawPreview();
+  showMsg("Zone delete ho gaya: " + name + ". Save karna na bhoolo.", true);
+}
+function editZone(i) {
+  var z = zones[i];
+  zones.splice(i, 1);
+  loadForm(z);
+  renderList();
+  drawPreview();
+  showMsg("'" + z.name + "' form mein aa gaya — badal kar dobara 'Zone Add Karo' dabao.", true);
+}
+function saveMap() {
+  if (zones.length === 0) { showMsg("Pehle kam se kam aik zone add karo.", false); return; }
+  for (var i = 0; i < zones.length; i++) {
+    if (!validZone(zones[i])) { showMsg("Koi zone ghalat hai — list check karo.", false); return; }
+  }
+  houseName = el("houseName").value.trim();
+  var data = { houseName: houseName, zones: zones };
+  try {
+    localStorage.setItem(MAP_KEY, JSON.stringify(data));
+    showMsg("Map save ho gaya! (" + zones.length + " zones) — 'Dashboard par Dekho' se dekho, dashboard ab aap ka map dikhayega.", true);
+  } catch (e) {
+    showMsg("Save nahi ho saka — browser ki storage band lagti hai.", false);
+  }
+}
+function resetDefault() {
+  try { localStorage.removeItem(MAP_KEY); } catch (e) { /* ignore */ }
+  zones = DEFAULT_ZONES.map(function (z) {
+    return { name: z.name, type: z.type, x: z.x, y: z.y, w: z.w, h: z.h };
+  });
+  houseName = "";
+  el("houseName").value = "";
+  renderList();
+  drawPreview();
+  showMsg("Default map wapas aa gaya. Dashboard ab dobara default map dikhayega.", true);
+}
+
+// Canvas par tap — naye zone ki jagah set karo
+canvas.addEventListener("click", function (ev) {
+  var rect = canvas.getBoundingClientRect();
+  var gx = (ev.clientX - rect.left) / rect.width * 100;
+  var gy = (ev.clientY - rect.top) / rect.height * 100;
+  var w = num(el("zw").value, 30), h = num(el("zh").value, 25);
+  var x = clamp(Math.round(gx - w / 2), 0, 100 - w);
+  var y = clamp(Math.round(gy - h / 2), 0, 100 - h);
+  el("zx").value = x; el("sx").value = x;
+  el("zy").value = y; el("sy").value = y;
+  drawPreview();
+  showMsg("Tap wali jagah zone ki position set ho gayi (x:" + x + ", y:" + y + ") — naam likh kar 'Zone Add Karo' dabao.", true);
+});
+
+/* ---------------- Start ---------------- */
+syncPair("zx", "sx");
+syncPair("zy", "sy");
+syncPair("zw", "sw");
+syncPair("zh", "sh");
+if (loadSaved()) {
+  el("houseName").value = houseName;
+  showMsg("Aap ka save kiya hua map load ho gaya (" + zones.length + " zones).", true);
+} else {
+  zones = DEFAULT_ZONES.map(function (z) {
+    return { name: z.name, type: z.type, x: z.x, y: z.y, w: z.w, h: z.h };
+  });
+  showMsg("Default map dikh raha hai — apna map banao aur 'Map Save Karo' dabao.", true);
+}
+renderList();
+drawPreview();
+</script>
+</body>
+</html>
