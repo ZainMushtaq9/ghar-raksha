@@ -32,7 +32,7 @@
         {
           "@type": "Question",
           "name": "Ghar Raksha banane mein kitna kharcha aata hai?",
-          "acceptedAnswer": {"@type": "Answer", "text": "Starter (1 zone) ~Rs 5,500, Full (3 zones + LD2410) ~Rs 8,000–8,500, aur Full + GSM + backup ~Rs 13,000. Qeematein 25 Nov 2026 ko Pakistan ki dukaanon se check ki hui hain. LD2410 ki qeemat andaza hai, verify nahi hui."}
+          "acceptedAnswer": {"@type": "Answer", "text": "Starter (1 zone) ~Rs 5,500, Full (3 zones + LD2410) ~Rs 8,000–8,500, aur Full + power backup ~Rs 10,000–11,000 (andaza). System WiFi-only hai — koi GSM ya SIM nahi chahiye. Qeematein 25 Nov 2026 ko Pakistan ki dukaanon se check ki hui hain. LD2410 ki qeemat andaza hai, verify nahi hui."}
         },
         {
           "@type": "Question",
@@ -47,7 +47,7 @@
         {
           "@type": "Question",
           "name": "Mahinaana kharcha kitna hai?",
-          "acceptedAnswer": {"@type": "Answer", "text": "Rs 0. Telegram alert WiFi se free hai, koi subscription nahi. GSM use karo to sirf SMS ka kharcha hota hai."}
+          "acceptedAnswer": {"@type": "Answer", "text": "Rs 0. Telegram alert ghar ke WiFi se free hai, koi subscription nahi, koi SIM ya mobile data nahi chahiye."}
         },
         {
           "@type": "Question",
@@ -133,11 +133,11 @@
     <p>Starter + extra sensors aur LD2410 (khara hua banda bhi pakarta hai). Aik hi ESP32 4 zones chala leta hai.</p>
   </div>
   <div class="card">
-    <h3>Full + GSM + backup</h3>
-    <p class="price">~Rs 13,000</p>
-    <p>Full + SIM800L (PTA-registered, baghair internet SMS alert) + router UPS / power bank.</p>
+    <h3>Full + power backup</h3>
+    <p class="price">~Rs 10,000 – 11,000 (andaza)</p>
+    <p>Full + router ka chhota UPS (agar pehle se nahi hai). System WiFi-only hai — koi GSM ya SIM nahi chahiye.</p>
   </div>
-  <p><b>Mahinaana kharcha: Rs 0</b> — Telegram alert free hai, sirf WiFi chahiye.
+  <p><b>Mahinaana kharcha: Rs 0</b> — Telegram alert ghar ke WiFi se free hai, koi SIM ya mobile data nahi chahiye.
   Poori tafseel <a href="shopping.html">Shopping List</a> par hai. (LD2410 ki qeemat
   andaza hai — Pakistan retail qeemat verify nahi hui, wahan saaf likha hai.)</p>
 
@@ -146,10 +146,25 @@
     <li>Aik sensor aik kamra/zone dekhta hai — har zone ko apna sensor chahiye.</li>
     <li>Radar moti eent/concrete deewar ke peeche reliable nahi hai.</li>
     <li>PIR ko seedha nazar chahiye; pankha, heater ya paalto janwar ghalat alarm de sakte hain.</li>
-    <li>Bijli gayi to system band — router par UPS aur ESP32 par power bank rakho, ya GSM option lagao.</li>
+    <li>Bijli gayi to system band — router par UPS aur ESP32 par power bank rakho. WiFi/internet band ho to Telegram alert ruk jata hai (WiFi wapas aate hi chala jata hai) — siren aur light phir bhi local bajte hain.</li>
     <li>WiFi CSI (video wali technology) asal hai lekin research level ki hai — Phase 2 hai, main system ka hissa nahi.</li>
     <li><b>Koi system 100% nahi hota.</b> Ye system pakarne aur foran alert ka waqt deta hai — mazboot darwaze aur CCTV (saboot ke liye) sath rakho.</li>
   </ul>
+
+  <h2>Frequency se napna — WiFi CSI (Phase 2, tajurba)</h2>
+  <p>Ghar ka WiFi 2.4 GHz ki frequency par signal bhejta hai. Jab kamray mein koi
+  banda chalta hai, to us ka jism is signal ko halka sa bigaar deta hai — signal
+  ki frequency/amplitude hil jati hai. Doosra ESP32 is signal ko sun kar nap sakta
+  hai ke kamray mein koi hai ya nahi. Matlab: <b>jo network pehle se maujood hai,
+  usi ki frequency se banda napna</b> — koi SIM, koi mobile data, koi naya network
+  nahi chahiye. Router hi sender ban sakta hai, ya do ESP32 (aik bhejta hai, aik sunta hai).</p>
+  <p><b>Kya chahiye:</b> extra ESP32 x1 (~Rs 1,200), ESP-IDF framework, aur ghar ke
+  kamray mein calibration (pehle "khali kamra" phir "banda maujood" dikha kar sikhana).</p>
+  <p><b>Sachai:</b> ye <b>EXPERIMENTAL</b> hai — abhi bana nahi, baghair hardware ke
+  verify nahi hua. Phase 1 (PIR / radar / door sensor) woh rasta hai jo abhi bharose
+  se kaam karta hai; CSI us ke baad ka tajurba hai. Agar Phase 2 chal gaya to bina
+  sensor ke bhi maujoodgi ka pata chalega, aur aage chal kar yehi tareeqa zyada
+  zones ya public use ke liye barhaya ja sakta hai.</p>
 
   <div class="good">
     <b>Verify kiya hua (25 Nov 2026):</b> ESP32 firmware compile <b>PASS</b>
@@ -163,13 +178,13 @@
   <h2>Aksar pooche gaye sawal (FAQ)</h2>
   <div class="faq">
     <h3>Ghar Raksha banane mein kitna kharcha aata hai?</h3>
-    <p>Starter (1 zone) ~Rs 5,500, Full (3 zones + LD2410) ~Rs 8,000–8,500, aur Full + GSM + backup ~Rs 13,000. Qeematein 25 Nov 2026 ko Pakistan ki dukaanon se check ki hui hain. LD2410 ki qeemat andaza hai, verify nahi hui.</p>
+    <p>Starter (1 zone) ~Rs 5,500, Full (3 zones + LD2410) ~Rs 8,000–8,500, aur Full + power backup ~Rs 10,000–11,000 (andaza). System WiFi-only hai — koi GSM ya SIM nahi chahiye. Qeematein 25 Nov 2026 ko Pakistan ki dukaanon se check ki hui hain. LD2410 ki qeemat andaza hai, verify nahi hui.</p>
     <h3>Kya ye system CCTV ke baghair kaam karta hai?</h3>
     <p>Ji. System camera par nahi, sensors par chalta hai — PIR, radar aur mmWave sensor harkat pakarte hain, chehre ki zaroorat nahi. CCTV sirf saboot ke liye sath rakhna behtar hai.</p>
     <h3>Kaunse sensors lagte hain?</h3>
     <p>PIR HC-SR501, RCWL-0516 microwave radar, HLK-LD2410 mmWave sensor aur MC-38 magnetic door sensor. Aik hi ESP32 chaaron zones chala leta hai.</p>
     <h3>Mahinaana kharcha kitna hai?</h3>
-    <p>Rs 0. Telegram alert WiFi se free hai, koi subscription nahi. GSM use karo to sirf SMS ka kharcha hota hai.</p>
+    <p>Rs 0. Telegram alert ghar ke WiFi se free hai, koi subscription nahi, koi SIM ya mobile data nahi chahiye.</p>
     <h3>Dashboard ka DEMO MODE kya hai?</h3>
     <p>DEMO MODE mein dashboard nakli (simulated) data dikhata hai — koi asal sensor nahi hota. LIVE MODE mein ye ESP32 se jor kar asal zones, arm/disarm aur alerts dikhata hai.</p>
     <h3>Firmware kahan se download karoon?</h3>

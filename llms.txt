@@ -21,16 +21,25 @@
 
 - Starter, 1 zone: ~Rs 5,500
 - Full, 3 zones + LD2410 mmWave: ~Rs 8,000-8,500
-- Full + GSM + backup: ~Rs 13,000
-- Monthly cost: Rs 0 (Telegram alerts over WiFi are free; no subscription).
-  GSM (SIM800L) costs only per SMS. SIM800L must be PTA-registered in Pakistan.
+- Full + power backup (router UPS, if not already at home): ~Rs 10,000-11,000 (estimate)
+- Monthly cost: Rs 0 (Telegram alerts over the home WiFi are free; no
+  subscription, no SIM, no mobile data). The system is WiFi-only: it runs on
+  the existing home WiFi. A GSM add-on (SIM800L, +Rs 3,000) exists only as a
+  future expansion if WiFi is ever unavailable; it is NOT part of the plan.
+- Phase 2 (experimental): WiFi CSI — measuring a person's presence from the
+  disturbance their body causes to the existing 2.4 GHz WiFi signal
+  (frequency/amplitude change), using a second ESP32 (~Rs 1,200) as listener.
+  Not built or verified without hardware; Phase 1 sensors are the reliable
+  path. See firmware/wifi_csi_experiment/README.md.
 
 ## Honest limits (stated on the site itself)
 
 - One sensor covers one zone only; every room needs its own sensor.
 - Radar is not reliable through thick brick/concrete walls.
 - PIR needs line of sight; fans, heaters and pets can cause false alarms.
-- Power cut stops the system unless a router UPS / power bank (or GSM) is used.
+- Power cut stops the system unless a router UPS / power bank is used. If the
+  home WiFi/internet is down, Telegram alerts wait until WiFi returns; the
+  siren and light still trigger locally.
 - No system is 100% — strong doors, good locks and CCTV (as evidence) are still needed.
 - The TikTok video that inspired the project was a Python simulation, not real
   sensor data; the site says so clearly. The dashboard DEMO MODE is also
