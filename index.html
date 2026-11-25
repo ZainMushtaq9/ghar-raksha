@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghar Raksha — Ghar ki Hifazat, Camera ke Baghair</title>
+<meta name="description" content="Ghar Raksha: ESP32 + radar sensors se ghar ki hifazat. CCTV se bachne wala bhi sensor se nahi bach sakta. Poora plan, code, wiring guide aur shopping list — free.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>GHAR RAKSHA <span>// HOME SECURITY</span></h1>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="setup.html">Setup Guide</a>
+      <a href="shopping.html">Shopping List</a>
+      <a href="downloads.html">Downloads</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h2>Ghar ki hifazat — camera ke baghair, radar se.</h2>
+    <p>Chor CCTV se bach jata hai: blind spot, andhera, munh dhaka hua. Ghar Raksha
+    camera par nahi, <b>sensors</b> par chalta hai — PIR, microwave radar aur mmWave
+    presence sensor. Sensor ko chehra nahi chahiye, sirf jism ki maujoodgi chahiye.</p>
+    <p class="sub">ESP32 + sensors + siren + Telegram alert + live radar dashboard.
+    Sab kuch khula (open) — code, wiring guide aur shopping list isi website par hai.</p>
+    <a class="btn" href="dashboard.html">Radar Dashboard kholo</a>
+    <a class="btn ghost" href="setup.html">Banana shuru karo</a>
+  </div>
+
+  <div class="warn">
+    <b>Sach baat pehle:</b> jis TikTok video (@engr_zoroz, "Human presence system
+    with WiFi CSI") se ye idea aaya, wo <b>Python simulation</b> thi — screen par
+    khud likha tha "NO REAL CSI DATA / DEMO ONLY". Us mein koi asal sensor ya asal
+    data nahi tha. Is website ka dashboard bhi DEMO MODE mein simulation dikhata hai,
+    aur us par saaf likha hai. <b>Asal detection sirf physical sensors karte hain</b>
+    — wo isi project mein hain.
+  </div>
+
+  <h2>Kaise kaam karta hai (5 steps)</h2>
+  <ol class="steps">
+    <li><b>Sensor lagte hain</b> — gate, sehan aur kamron mein. Radar banda aate hi pakar leta hai, chahe andhera ho ya munh dhaka ho.</li>
+    <li><b>ESP32 dimaagh hai</b> — aik chhota board jo saare sensors se jura hota hai aur WiFi se connected hota hai.</li>
+    <li><b>Raat ko system "Armed" hota hai</b> — dashboard ya phone se on karo. Din mein ghar walon ki aamad-o-raft par kuch nahi hota.</li>
+    <li><b>Banda aate hi</b> — siren bajta hai, light on hoti hai, aur phone par Telegram alert aata hai, usi waqt.</li>
+    <li><b>Dashboard par activity nazar aati hai</b> — ghar ka map dikhta hai, kis zone mein banda hai, kab aaya, kab gaya. Website se system ko Arm/Disarm bhi kar sakte ho — website sirf dikhati nahi, jawab bhi deti hai.</li>
+  </ol>
+
+  <h2>Zones (aam Pakistani ghar ke hisaab se)</h2>
+  <table>
+    <tr><th>Zone</th><th>Kahan</th><th>Kya lagta hai</th></tr>
+    <tr><td>Zone 1 — Main Gate</td><td>Ghar ka bahar wala darwaza</td><td>Door sensor + PIR</td></tr>
+    <tr><td>Zone 2 — Sehan</td><td>Courtyard / veranda</td><td>PIR + radar</td></tr>
+    <tr><td>Zone 3 — Kamra 1</td><td>Sonay / bethak wala kamra</td><td>PIR + radar + door sensor</td></tr>
+    <tr><td>Zone 4 — Kamra 2</td><td>Doosra kamra</td><td>PIR + door sensor</td></tr>
+  </table>
+  <p>Har zone ka apna sensor hota hai. Aik sensor poora ghar nahi dekhta — ye video
+  ki simulation aur asal system ka sab se bara farq hai.</p>
+
+  <h2>Kharcha (Pakistan, 25 Nov 2026 ki check ki hui qeematein)</h2>
+  <div class="card">
+    <h3>Starter — 1 zone (Gate + Sehan)</h3>
+    <p class="price">~Rs 5,500</p>
+    <p>ESP32 + PIR + radar + door sensor + siren + relay + adapter. Pehle isi se shuru karo.</p>
+  </div>
+  <div class="card">
+    <h3>Full — 3 zones + LD2410 mmWave</h3>
+    <p class="price">~Rs 8,000 – 8,500</p>
+    <p>Starter + extra sensors aur LD2410 (khara hua banda bhi pakarta hai). Aik hi ESP32 4 zones chala leta hai.</p>
+  </div>
+  <div class="card">
+    <h3>Full + GSM + backup</h3>
+    <p class="price">~Rs 13,000</p>
+    <p>Full + SIM800L (PTA-registered, baghair internet SMS alert) + router UPS / power bank.</p>
+  </div>
+  <p><b>Mahinaana kharcha: Rs 0</b> — Telegram alert free hai, sirf WiFi chahiye.
+  Poori tafseel <a href="shopping.html">Shopping List</a> par hai. (LD2410 ki qeemat
+  andaza hai — Pakistan retail qeemat verify nahi hui, wahan saaf likha hai.)</p>
+
+  <h2>Sachi hadain (pehle se pata hon)</h2>
+  <ul>
+    <li>Aik sensor aik kamra/zone dekhta hai — har zone ko apna sensor chahiye.</li>
+    <li>Radar moti eent/concrete deewar ke peeche reliable nahi hai.</li>
+    <li>PIR ko seedha nazar chahiye; pankha, heater ya paalto janwar ghalat alarm de sakte hain.</li>
+    <li>Bijli gayi to system band — router par UPS aur ESP32 par power bank rakho, ya GSM option lagao.</li>
+    <li>WiFi CSI (video wali technology) asal hai lekin research level ki hai — Phase 2 hai, main system ka hissa nahi.</li>
+    <li><b>Koi system 100% nahi hota.</b> Ye system pakarne aur foran alert ka waqt deta hai — mazboot darwaze aur CCTV (saboot ke liye) sath rakho.</li>
+  </ul>
+
+  <div class="good">
+    <b>Verify kiya hua (25 Nov 2026):</b> ESP32 firmware compile <b>PASS</b>
+    (PlatformIO, RAM 14.7%, Flash 77.0%). Dashboard smoke test <b>31/31 PASS</b>.
+    Pin cross-check <b>14/14 match</b> (firmware vs wiring guide). Qeematein
+    cross-check ki hui. Poori report project mein <code>VERIFICATION.md</code>
+    mein hai — aur jo cheezein baghair hardware ke verify nahi ho sakti
+    (asal sensor, Telegram end-to-end), wo bhi wahan saaf likhi hain.
+  </div>
+
+  <h2>Shuru karo</h2>
+  <p>
+    <a class="btn" href="dashboard.html">1. Dashboard demo dekho</a>
+    <a class="btn ghost" href="shopping.html">2. Samaaan khareedo</a>
+    <a class="btn ghost" href="setup.html">3. Joro aur chalao</a>
+    <a class="btn ghost" href="downloads.html">4. Code download karo</a>
+  </p>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <b>Ghar Raksha</b> — aik DIY home security project (ESP32 + sensors).
+    CCTV saboot ke liye rehne do; pakarna sensor ka kaam hai.
+    Koi system 100% nahi hota — mazboot darwaze, achi kundiyan aur hoshiyari sath rakho.
+  </div>
+</footer>
+</body>
+</html>

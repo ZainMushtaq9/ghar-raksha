@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Downloads — Ghar Raksha</title>
+<meta name="description" content="Ghar Raksha downloads: ESP32 firmware source (.ino) aur tayyar compiled firmware (.bin). Compile-verify kiya hua.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>GHAR RAKSHA <span>// DOWNLOADS</span></h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="setup.html">Setup Guide</a>
+      <a href="shopping.html">Shopping List</a>
+      <a href="downloads.html" class="active">Downloads</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>Downloads</h2>
+
+  <div class="good">
+    <b>Compile verify kiya hua:</b> ye firmware PlatformIO 6.2.0 (esp32dev, Arduino
+    framework) se compile hua — <b>SUCCESS, RAM 14.7% (48,032 / 327,680), Flash 77.0%
+    (1,008,664 / 1,310,720)</b>, 25 Nov 2026. Neeche wali <code>.bin</code> file
+    usi compile ki hai.
+  </div>
+
+  <h2>1. Source code (Arduino IDE ke liye) — recommended</h2>
+  <p>Ye tareeqa sab se asaan hai: file kholo, apna WiFi naam/password bharo, Upload dabao.
+  Poora tareeqa <a href="setup.html">Setup Guide (Step 4)</a> mein hai.</p>
+  <p><a class="btn" href="downloads/home_guard.ino">home_guard.ino download karo</a></p>
+
+  <h2>2. Tayyar firmware (.bin) — seedha flash karo</h2>
+  <p>Arduino IDE use nahi karna to tayyar files ko <code>esptool</code> se seedha
+  ESP32 par flash kar do. Pehle <code>esptool</code> install karo:</p>
+  <pre><code>pip install esptool</code></pre>
+  <p>Phir ye 4 files download karo aur aik command chalao (Windows par
+  <code>COM3</code> ki jagah apna port likho, masalan <code>COM4</code>;
+  Linux/Mac par <code>/dev/ttyUSB0</code>):</p>
+  <p>
+    <a class="btn ghost" href="downloads/firmware.bin">firmware.bin</a>
+    <a class="btn ghost" href="downloads/bootloader.bin">bootloader.bin</a>
+    <a class="btn ghost" href="downloads/partitions.bin">partitions.bin</a>
+  </p>
+  <pre><code>esptool.py --chip esp32 --port COM3 --baud 460800 write_flash -z 0x1000 bootloader.bin 0x8000 partitions.bin 0x10000 firmware.bin</code></pre>
+  <div class="warn"><b>Zaroori:</b> teenon files aik sath flash karo — sirf
+  <code>firmware.bin</code> akela kaam nahi karega, kyun ke ESP32 ko bootloader
+  aur partition table bhi chahiye hoti hai. Flash ke baad ESP32 ko USB se nikaal
+  kar dobara lagao, phir Serial Monitor (115200 baud) mein WiFi ka IP dekho.</div>
+  <p class="muted">WiFi naam/password .bin mein nahi badla ja sakta — .bin mein
+  <code>APNE_WIFI_KA_NAAM</code> / <code>APNA_WIFI_PASSWORD</code> placeholder hai.
+  Apna WiFi bharna ho to <b>source code (option 1)</b> use karo. Telegram alert
+  ke liye bhi source code chahiye (token + chat ID code mein bharna parta hai).</p>
+
+  <h2>Files ki tafseel</h2>
+  <table>
+    <tr><th>File</th><th>Size</th><th>Kya hai</th></tr>
+    <tr><td><a href="downloads/home_guard.ino">home_guard.ino</a></td><td>~16 KB</td><td>Source code — sensors, siren, Telegram, web server (<code>/status</code>, <code>/arm</code>, <code>/disarm</code>)</td></tr>
+    <tr><td><a href="downloads/firmware.bin">firmware.bin</a></td><td>~1.0 MB</td><td>Compiled app — 0x10000 par flash hoti hai</td></tr>
+    <tr><td><a href="downloads/bootloader.bin">bootloader.bin</a></td><td>~23 KB</td><td>ESP32 bootloader — 0x1000 par flash hota hai</td></tr>
+    <tr><td><a href="downloads/partitions.bin">partitions.bin</a></td><td>3 KB</td><td>Partition table — 0x8000 par flash hoti hai</td></tr>
+  </table>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <b>Ghar Raksha</b> — aik DIY home security project (ESP32 + sensors).
+    Koi system 100% nahi hota — mazboot darwaze, achi kundiyan aur hoshiyari sath rakho.
+  </div>
+</footer>
+</body>
+</html>

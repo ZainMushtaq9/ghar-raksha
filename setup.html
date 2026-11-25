@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup Guide — Ghar Raksha</title>
+<meta name="description" content="Ghar Raksha setup guide: ESP32 aur sensors ko jorne ka tareeqa, step by step, Roman Urdu mein. Pin table, code upload, dashboard jorna, har zone ka test.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>GHAR RAKSHA <span>// SETUP GUIDE</span></h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="setup.html" class="active">Setup Guide</a>
+      <a href="shopping.html">Shopping List</a>
+      <a href="downloads.html">Downloads</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>Setup Guide — step by step</h2>
+  <p>Pehle poora guide parh lo, phir kaam shuru karo. Samaaan ki list
+  <a href="shopping.html">Shopping List</a> par hai.</p>
+
+  <h2>1. Samaan (pehle se khareeda hua)</h2>
+  <ul>
+    <li>ESP32 DevKit V1 (1x) — aik hi board 4 zones chala leta hai</li>
+    <li>PIR HC-SR501 (Gate, Sehan, Kamra 1, Kamra 2 ke liye)</li>
+    <li>RCWL-0516 (Sehan, Kamra 1 ke liye — optional)</li>
+    <li>HLK-LD2410 (Sehan ke liye — optional, behtareen hai)</li>
+    <li>MC-38 magnetic door sensor (Gate, Kamra 1, Kamra 2 ke liye)</li>
+    <li>12V siren + relay module (2-channel)</li>
+    <li>Chhota buzzer (5V active)</li>
+    <li>12V 2.5A adapter (ESP32 ko 5V USB se bhi chala sakte ho)</li>
+    <li>Jumper wires, breadboard ya vero board, plastic box</li>
+  </ul>
+
+  <h2>2. Pin Connection Table (ESP32 pin → sensor pin)</h2>
+  <p><b>Ye table firmware (<code>home_guard.ino</code>) se bilkul match karti hai.
+  Agar pin badlo to code mein bhi badlo.</b> Verify kiya hua: 14/14 pins match.</p>
+
+  <h3>PIR sensor HC-SR501 (har aik ke 3 pin: VCC, OUT, GND)</h3>
+  <table>
+    <tr><th>Zone</th><th>PIR OUT → ESP32</th><th>PIR VCC</th><th>PIR GND</th></tr>
+    <tr><td>Main Gate</td><td>GPIO 13</td><td>5V</td><td>GND</td></tr>
+    <tr><td>Sehan</td><td>GPIO 12</td><td>5V</td><td>GND</td></tr>
+    <tr><td>Kamra 1</td><td>GPIO 14</td><td>5V</td><td>GND</td></tr>
+    <tr><td>Kamra 2</td><td>GPIO 27</td><td>5V</td><td>GND</td></tr>
+  </table>
+  <p>PIR par 2 chhoti knob hoti hain: sensitivity (kitni door se pakre) aur time delay.
+  Shuru mein sensitivity darmiyani (beech mein) rakho.</p>
+
+  <h3>RCWL-0516 microwave radar (3 pin: VIN, OUT, GND)</h3>
+  <table>
+    <tr><th>Zone</th><th>RCWL OUT → ESP32</th><th>RCWL VIN</th><th>RCWL GND</th></tr>
+    <tr><td>Sehan</td><td>GPIO 26</td><td>5V</td><td>GND</td></tr>
+    <tr><td>Kamra 1</td><td>GPIO 25</td><td>5V</td><td>GND</td></tr>
+  </table>
+  <p>RCWL deewar ke aar-paar bhi harkat pakar leta hai — is liye is ko kamray ke
+  beech mein lagao, deewar se chipka kar nahi. Agar padosi kamray ki harkat par
+  bhi bajne lage to is ko hata do, PIR kaafi hai.</p>
+
+  <h3>HLK-LD2410 mmWave sensor (Sehan ke liye)</h3>
+  <table>
+    <tr><th>LD2410 pin</th><th>ESP32 pin</th></tr>
+    <tr><td>5V (VCC)</td><td>5V</td></tr>
+    <tr><td>GND</td><td>GND</td></tr>
+    <tr><td>TX</td><td>GPIO 16 (RX2)</td></tr>
+    <tr><td>RX</td><td>GPIO 17 (TX2)</td></tr>
+    <tr><td>OUT</td><td>(kuch nahi — UART se baat hoti hai)</td></tr>
+  </table>
+  <p>LD2410 ko 5V chahiye, 3.3V par theek nahi chalta. UART baud 256000 hai
+  (code mein pehle se set hai). Sensor ko 2–2.5 meter ooncha, kamray ki taraf
+  munh kar ke lagao.</p>
+
+  <h3>MC-38 magnetic door sensor (2 taar, koi polarity nahi)</h3>
+  <table>
+    <tr><th>Darwaza</th><th>Taar 1 → ESP32</th><th>Taar 2 → ESP32</th></tr>
+    <tr><td>Main Gate</td><td>GPIO 32</td><td>GND</td></tr>
+    <tr><td>Kamra 1</td><td>GPIO 33</td><td>GND</td></tr>
+    <tr><td>Kamra 2</td><td>GPIO 4</td><td>GND</td></tr>
+  </table>
+  <p>Magnet wala hissa darwaze ke moving hisse par, switch wala hissa frame par
+  lagao. Darwaza band ho to dono 1 cm ke andar hon. Code mein
+  <code>INPUT_PULLUP</code> hai, is liye bahar se resistor ki zaroorat nahi.</p>
+
+  <h3>Siren, relay, buzzer (OUTPUT — ehtiyaat se!)</h3>
+  <table>
+    <tr><th>Cheez</th><th>ESP32 pin</th><th>Kaise joro</th></tr>
+    <tr><td>Siren (12V)</td><td>GPIO 18</td><td><b>Direct kabhi nahi!</b> Relay module ke zariye: GPIO 18 → relay IN, relay se 12V siren.</td></tr>
+    <tr><td>Bahar ki light</td><td>GPIO 19</td><td>Relay module (doosra channel) → light. 220V wala kaam samajh na aaye to electrician se karwao.</td></tr>
+    <tr><td>Buzzer (5V active)</td><td>GPIO 21</td><td>Buzzer (+) → GPIO 21, (−) → GND. Direct theek hai (chhota buzzer).</td></tr>
+  </table>
+  <div class="warn"><b>220V bijli se khelna khatarnak hai.</b> Light wala relay agar 220V par
+  lagana hai to kisi samajhdar electrician se lagwao. Shuru mein sirf siren + buzzer kaafi hain.</div>
+
+  <h2>3. Assembly ka order</h2>
+  <ol>
+    <li>Pehle ESP32 ko USB se laptop se joro, code upload karo (Step 4).</li>
+    <li>Phir <b>aik zone</b> joro — sirf Sehan ka PIR. Test karo.</li>
+    <li>Test pass ho to baaki PIR joro, aik aik kar ke test karte jao.</li>
+    <li>Phir door sensor, phir RCWL, phir LD2410.</li>
+    <li>Aakhir mein siren + relay joro (siren test karte waqt kaan band rakho — bohat tez hota hai).</li>
+    <li>Sab kuch plastic box mein band karo, taarein tape/cable tie se saaf rakho.</li>
+  </ol>
+
+  <h2>4. Code upload karna (Arduino IDE)</h2>
+  <ol>
+    <li>Arduino IDE install karo (arduino.cc se, free hai).</li>
+    <li>IDE mein: File → Preferences → "Additional Boards Manager URLs" mein ye daalo:
+      <code>https://espressif.github.io/arduino-esp32/package_esp32_index.json</code>
+      (Ye official Espressif ka link hai.)</li>
+    <li>Tools → Board → Boards Manager → "esp32" search kar ke Espressif ka board package install karo.</li>
+    <li>Tools → Board → "ESP32 Dev Module" select karo. Port apni USB wali select karo.</li>
+    <li><a href="downloads/home_guard.ino">home_guard.ino</a> file kholo.</li>
+    <li>Upar CONFIG mein apna <b>WiFi naam + password</b> bharo. Telegram chahiye to
+      token + chat ID bharo (tareeqa code ke comments mein likha hai).
+      Jo sensor nahi khareeda, us ka <code>#define</code> band kar do (line ke shuru mein <code>//</code>).</li>
+    <li>Upload dabao. Upload ke doran agar "Connecting..." par atak jaye to ESP32
+      par BOOT button daba kar rakho, phir upload karo.</li>
+    <li>Upload ke baad: Tools → Serial Monitor kholo (115200 baud). Wahan WiFi ka
+      <b>IP address</b> nazar aayega — us ko note kar lo, dashboard ko yehi IP chahiye.</li>
+  </ol>
+  <p class="muted">Code pehle se compile-verify hai (PlatformIO: RAM 14.7%, Flash 77.0%).
+  Agar Arduino IDE use nahi karna to tayyar <code>.bin</code> file ko seedha flash
+  kar sakte ho — tareeqa <a href="downloads.html">Downloads</a> par hai.</p>
+
+  <h2>5. Dashboard ko ESP32 se jorna</h2>
+  <ol>
+    <li>Laptop/phone aur ESP32 <b>aik hi WiFi</b> par hon.</li>
+    <li><a href="dashboard.html">Dashboard</a> kholo.</li>
+    <li><b>LIVE MODE</b> dabao.</li>
+    <li>ESP32 ka IP likho (Serial Monitor wala, masalan <code>192.168.1.100</code>) aur Lagao dabao.</li>
+    <li>Agar "ESP32 connect nahi" aaye to check karo: IP theek hai? ESP32 on hai?
+      Dono aik hi WiFi par hain? Router ne IP badal to nahi diya (dobara Serial Monitor dekho)?</li>
+  </ol>
+  <p>Dashboard har 1 second mein ESP32 se <code>/status</code> mangta hai. Arm/Disarm
+  dabane par dashboard ESP32 ko <code>/arm</code> ya <code>/disarm</code> bhejta hai —
+  website se system ko control bhi kar sakte ho, sirf dekh nahi sakte.</p>
+
+  <h2>6. Har zone ka test</h2>
+  <ol>
+    <li>Dashboard LIVE mode mein, system <b>DISARMED</b> rakho (siren na baje).</li>
+    <li>Aik aik kar ke har zone mein jao — dashboard par us zone mein "BANDA!" aana chahiye.</li>
+    <li>Darwaza kholo — "Darwaza khula" aana chahiye.</li>
+    <li>Phir <b>ARM</b> karo aur dobara zone mein jao — siren bajna chahiye, light jalni
+      chahiye, Telegram alert aana chahiye (agar token bhara hai).</li>
+    <li>Test ke baad <b>DISARM</b> kar do.</li>
+  </ol>
+
+  <h2>7. Raat ko arm karna (roz ka tareeqa)</h2>
+  <ul>
+    <li>Sone se pehle dashboard kholo aur ARM karo (ya browser mein
+      <code>http://&lt;ESP32-IP&gt;/arm</code> kholo).</li>
+    <li>Subah uth kar DISARM karo, warna ghar walon ki movement par siren bajega.</li>
+    <li>Ghar se bahar jate waqt bhi ARM karo.</li>
+  </ul>
+
+  <h2>8. Sachi hadain (honest limits — zaroor parho)</h2>
+  <ul>
+    <li><b>Ek sensor = ek zone.</b> Ek PIR poora ghar nahi dekh sakta. Har kamray ko apna sensor chahiye.</li>
+    <li><b>Radar moti deewar ke peeche bharosa nahi karta.</b> Brick/concrete deewar ke us paar banda dekhna mushkil hai — is liye sensor usi kamray mein lagao jis ki hifazat karni hai. TikTok video jaisa "deewar ke paar tracking" asal mein aisa nahi hota.</li>
+    <li><b>PIR ko seedha nazar (line of sight) chahiye.</b> Almari ya parde ke peeche banda PIR ko nazar nahi aata.</li>
+    <li><b>Sensor ko pankhe/heater se door rakho.</b> Pankha, heater, AC ki hawa aur paalto janwar (kutta/billi) ghalat alarm de sakte hain. PIR ko janwar ki oonchai se upar lagao.</li>
+    <li><b>100% detection ka wada koi nahi kar sakta.</b> Ye system chor ko mushkil banata hai aur foran khabar deta hai — laikin koi bhi system akela kaafi nahi. Mazboot darwaze, achi kundiyan aur CCTV (saboot ke liye) sath rakho.</li>
+    <li><b>Load-shedding:</b> Bijli gayi to ESP32 + sensors band ho jayenge, aur Telegram alert ke liye WiFi router ka on hona bhi zaroori hai. Hal: router par chhota UPS lagao (wohi UPS jo aksar ghar mein WiFi ke liye hota hai) aur ESP32 ko power bank se chalao. Agar bijli/internet par bharosa nahi to GSM option (SIM800L) lagao — wo SMS/call se alert deta hai, internet ke baghair. (SIM800L is code mein abhi nahi hai — Phase 2 mein add hoga; PTA registration lazmi hai.)</li>
+  </ul>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <b>Ghar Raksha</b> — aik DIY home security project (ESP32 + sensors).
+    Koi system 100% nahi hota — mazboot darwaze, achi kundiyan aur hoshiyari sath rakho.
+  </div>
+</footer>
+</body>
+</html>

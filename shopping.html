@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping List — Ghar Raksha</title>
+<meta name="description" content="Ghar Raksha shopping list: ESP32, sensors aur alarm ka samaan, Pakistan ki check ki hui qeematein (25 Nov 2026). Starter ~Rs 5,500, Full ~Rs 8,500.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>GHAR RAKSHA <span>// SHOPPING LIST</span></h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="setup.html">Setup Guide</a>
+      <a href="shopping.html" class="active">Shopping List</a>
+      <a href="downloads.html">Downloads</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>Shopping List — Pakistan prices</h2>
+  <p>Qeematein <b>25 Nov 2026</b> ko Pakistani dukaanon (digilog.pk, Daraz.pk,
+  robochacha.pk, mreeco.com, circuithub.pk) se check ki gayi hain. Jo qeemat
+  <b>andaza (estimate)</b> hai, us par saaf likha hai — dukaandar se confirm kar ke lo.</p>
+
+  <h2>Parts (aik aik cheez)</h2>
+  <table>
+    <tr><th>#</th><th>Cheez</th><th>Kitne chahiye</th><th>Qeemat (aik)</th><th>Note</th></tr>
+    <tr><td>1</td><td>ESP32 DevKit V1</td><td>1</td><td>Rs 1,000–1,200 (digilog.pk Rs 1,160)</td><td>Dimaagh — sab kuch is se chalta hai</td></tr>
+    <tr><td>2</td><td>PIR sensor HC-SR501</td><td>2–4</td><td>~Rs 200 (Rs 170–247)</td><td>Har zone ke liye aik</td></tr>
+    <tr><td>3</td><td>RCWL-0516 microwave radar</td><td>0–2</td><td>~Rs 130–150</td><td>Optional — Sehan/Kamra 1 ke liye</td></tr>
+    <tr><td>4</td><td>HLK-LD2410 mmWave sensor</td><td>0–1</td><td><b>ESTIMATE Rs 1,200–1,800</b></td><td>Qeemat confirm nahi — Robostan.pk ke paas stock hai (qeemat site par nahi likhi), AliExpress $2.20–3.50, Daraz Bangladesh ৳537–691. Robostan/Daraz se pooch kar lo.</td></tr>
+    <tr><td>5</td><td>MC-38 magnetic door sensor</td><td>2–3</td><td>~Rs 350–450 (Daraz Rs 420)</td><td>Har darwaze ke liye aik</td></tr>
+    <tr><td>6</td><td>12V siren</td><td>1</td><td>~Rs 950</td><td>Zor se bajta hai — chor ko bhagata hai</td></tr>
+    <tr><td>7</td><td>Relay module 2-channel</td><td>1</td><td><b>ESTIMATE ~Rs 300–400</b></td><td>Siren + light ke liye</td></tr>
+    <tr><td>8</td><td>12V 2.5A adapter</td><td>1</td><td><b>ESTIMATE ~Rs 600</b></td><td>Siren + ESP32 ki bijli</td></tr>
+    <tr><td>9</td><td>Buzzer 5V (active)</td><td>1</td><td><b>ESTIMATE ~Rs 100–150</b></td><td>Chhota, andar ki warning ke liye</td></tr>
+    <tr><td>10</td><td>Jumper wires + breadboard/vero board + plastic box + screws</td><td>1 set</td><td><b>ESTIMATE ~Rs 500–700</b></td><td>Assembly ka samaan</td></tr>
+    <tr><td>11</td><td>Delivery (TCS, Lahore se Multan)</td><td>—</td><td><b>ESTIMATE ~Rs 300–500</b></td><td>Dukaan par depend karta hai</td></tr>
+  </table>
+
+  <h2>Package 1 — STARTER (1 zone: Sehan ya Main Gate)</h2>
+  <table>
+    <tr><th>Cheez</th><th>Qeemat</th></tr>
+    <tr><td>ESP32 DevKit V1</td><td>Rs 1,160</td></tr>
+    <tr><td>PIR HC-SR501 x1</td><td>Rs 200</td></tr>
+    <tr><td>RCWL-0516 x1</td><td>Rs 130</td></tr>
+    <tr><td>MC-38 door sensor x1</td><td>Rs 420</td></tr>
+    <tr><td>12V siren</td><td>Rs 950</td></tr>
+    <tr><td>Relay 2-channel (est.)</td><td>Rs 350</td></tr>
+    <tr><td>12V adapter (est.)</td><td>Rs 600</td></tr>
+    <tr><td>Buzzer (est.)</td><td>Rs 150</td></tr>
+    <tr><td>Wires + box (est.)</td><td>Rs 500</td></tr>
+    <tr><td>Delivery (est.)</td><td>Rs 400</td></tr>
+    <tr><td><b>KUL (lag bhag)</b></td><td><b>~Rs 4,900–5,500</b></td></tr>
+  </table>
+  <p>Pehle isi se shuru karo — aik zone chala kar dekho, phir barhao.</p>
+
+  <h2>Package 2 — FULL (3 zones + LD2410)</h2>
+  <p>Starter wali sab cheezein + extra:</p>
+  <table>
+    <tr><th>Extra cheez</th><th>Qeemat</th></tr>
+    <tr><td>PIR HC-SR501 x2 mazeed</td><td>Rs 400</td></tr>
+    <tr><td>RCWL-0516 x1 mazeed</td><td>Rs 130</td></tr>
+    <tr><td>MC-38 door sensor x2 mazeed</td><td>Rs 840</td></tr>
+    <tr><td>HLK-LD2410 x1 (ESTIMATE)</td><td>Rs 1,500</td></tr>
+    <tr><td>Extra wires/box (est.)</td><td>Rs 300</td></tr>
+    <tr><td><b>FULL kul (lag bhag)</b></td><td><b>~Rs 8,000–8,500</b></td></tr>
+  </table>
+  <p>4th zone (Kamra 2) bhi add karna ho to aik PIR (~Rs 200) + aik MC-38 (~Rs 420)
+  aur lag jayenge — kul ~Rs 9,000 tak. Aik hi ESP32 4 zones chala leta hai, doosra
+  ESP32 nahi chahiye.</p>
+
+  <h2>Optional — GSM add-on (bijli/internet ke baghair alert)</h2>
+  <table>
+    <tr><th>Cheez</th><th>Qeemat</th></tr>
+    <tr><td>SIM800L GSM module</td><td>Rs 1,050–1,550 (non-PTA) ya <b>Rs 3,000 (PTA-registered)</b></td></tr>
+    <tr><td>SIM card + balance</td><td>Apne paas wali SIM</td></tr>
+  </table>
+  <div class="warn"><b>PTA registration Pakistan mein qanoonan lazmi hai.</b>
+  Non-PTA module sasta hai laikin PTA us ko block kar sakta hai — is liye
+  PTA-registered module (Rs 3,000) lo. GSM code is version mein nahi hai — Phase 2
+  mein add hoga.</div>
+
+  <h2>Optional — Power backup (load-shedding ke liye)</h2>
+  <table>
+    <tr><th>Cheez</th><th>Qeemat</th></tr>
+    <tr><td>Router ka chhota UPS</td><td><b>ESTIMATE Rs 1,500–2,500</b> (agar pehle se nahi hai)</td></tr>
+    <tr><td>ESP32 ke liye power bank (10,000 mAh)</td><td><b>ESTIMATE Rs 1,500–2,000</b> (agar pehle se nahi hai)</td></tr>
+  </table>
+
+  <h2>Sab kuch mila kar (Full + GSM + backup)</h2>
+  <p class="price">Lag bhag Rs 13,000</p>
+  <p>(agar UPS/power bank pehle se ghar mein hain to kam).</p>
+
+  <h2>Mahinaana kharcha</h2>
+  <ul>
+    <li><b>Rs 0</b> — Telegram alert free hai (WiFi se). Koi subscription nahi.</li>
+    <li>GSM use karo to sirf SMS ka kharcha (jitne alert, utne SMS).</li>
+  </ul>
+
+  <h2>Kahan se khareedo</h2>
+  <ul>
+    <li><b>digilog.pk</b> (Lahore, TCS delivery poore Pakistan mein) — ESP32, PIR, SIM800L</li>
+    <li><b>Daraz.pk</b> — MC-38 door sensor, siren</li>
+    <li><b>robochacha.pk / mreeco.com</b> — PIR, RCWL-0516</li>
+    <li><b>Robostan.pk</b> — HLK-LD2410 (qeemat WhatsApp par poocho: site par nahi likhi)</li>
+    <li><b>Hall Road, Lahore</b> — sab se sasta, agar koi Lahore jaye to wahan se le aao</li>
+  </ul>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <b>Ghar Raksha</b> — aik DIY home security project (ESP32 + sensors).
+    Koi system 100% nahi hota — mazboot darwaze, achi kundiyan aur hoshiyari sath rakho.
+  </div>
+</footer>
+</body>
+</html>

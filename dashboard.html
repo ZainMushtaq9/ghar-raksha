@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghar Raksha // Human Presence Radar</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #040d12;
+    --panel: #0a1a22;
+    --panel2: #0d232e;
+    --border: #1c3d4a;
+    --cyan: #22d3ee;
+    --cyan-dim: #0e7490;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --text: #d7f3f8;
+    --muted: #7fa8b3;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 10px;
+  }
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: linear-gradient(90deg, #08222c, #0a1a22);
+    padding: 10px 14px; margin-bottom: 10px;
+  }
+  header h1 { font-size: 18px; letter-spacing: 2px; color: var(--cyan); white-space: nowrap; }
+  header h1 span { color: var(--text); }
+  .badge {
+    font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px;
+    border: 1px solid var(--amber); color: var(--amber); background: rgba(245,158,11,.12);
+  }
+  .badge.live { border-color: var(--green); color: var(--green); background: rgba(34,197,94,.12); }
+  .clock { margin-left: auto; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+  #demoBanner {
+    border: 1px solid var(--amber); background: rgba(245,158,11,.14); color: #fcd34d;
+    border-radius: 8px; padding: 9px 12px; font-size: 14px; margin-bottom: 10px;
+  }
+  #demoBanner b { letter-spacing: 1px; }
+  #liveBanner {
+    display: none;
+    border: 1px solid var(--red); background: rgba(239,68,68,.12); color: #fca5a5;
+    border-radius: 8px; padding: 9px 12px; font-size: 14px; margin-bottom: 10px;
+  }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 10px; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  .panel {
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--panel); padding: 12px;
+  }
+  .panel h2 { font-size: 13px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 10px; text-transform: uppercase; }
+  #map { width: 100%; height: auto; display: block; background: #06141b; border-radius: 6px; border: 1px solid var(--border); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .modeRow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  #modeLabel { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+  #modeLabel.armed { color: var(--red); }
+  #modeLabel.disarmed { color: var(--green); }
+  #sirenBox {
+    display: none; font-weight: bold; color: #fff; background: var(--red);
+    padding: 6px 12px; border-radius: 6px; animation: blink 0.7s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: .35; } }
+  button {
+    cursor: pointer; border: 1px solid var(--cyan-dim); background: #0e2a35; color: var(--text);
+    padding: 9px 14px; border-radius: 6px; font-size: 14px; font-weight: 600;
+  }
+  button:hover { background: #123a48; }
+  button.primary { background: var(--cyan-dim); border-color: var(--cyan); }
+  button.danger { background: #7f1d1d; border-color: var(--red); }
+  button:disabled { opacity: .5; cursor: default; }
+  .btnRow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .seg { display: flex; gap: 0; margin-bottom: 14px; }
+  .seg button { border-radius: 0; flex: 1; }
+  .seg button:first-child { border-radius: 6px 0 0 6px; }
+  .seg button:last-child { border-radius: 0 6px 6px 0; }
+  .seg button.active { background: var(--cyan-dim); border-color: var(--cyan); color: #fff; }
+  .zoneRow {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; margin-bottom: 6px; border-radius: 6px;
+    background: var(--panel2); border: 1px solid var(--border); font-size: 14px;
+  }
+  .zoneRow.alert { border-color: var(--red); background: rgba(239,68,68,.14); }
+  .zoneRow.warn { border-color: var(--amber); background: rgba(245,158,11,.10); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .dot.amber { background: var(--amber); }
+  .dot.grey { background: #64748b; }
+  .zoneName { font-weight: 600; }
+  .zoneState { margin-left: auto; color: var(--muted); font-size: 13px; text-align: right; }
+  .zoneRow.alert .zoneState { color: #fca5a5; }
+  .field { display: flex; gap: 8px; margin-bottom: 6px; }
+  .field input {
+    flex: 1; background: #06141b; border: 1px solid var(--border); color: var(--text);
+    padding: 9px 10px; border-radius: 6px; font-size: 14px; min-width: 0;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+  #log {
+    list-style: none; max-height: 260px; overflow-y: auto;
+    font-size: 13px; line-height: 1.5;
+  }
+  #log li { padding: 6px 8px; border-bottom: 1px solid #12303c; word-break: break-word; }
+  #log li .t { color: var(--muted); margin-right: 6px; font-variant-numeric: tabular-nums; }
+  #log li.alert { color: #fca5a5; background: rgba(239,68,68,.08); }
+  footer { margin-top: 10px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  footer b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav style="margin-bottom:10px;font-size:14px;">
+  <a href="index.html" style="color:#22d3ee;">← Home</a>
+  &nbsp;·&nbsp;<a href="setup.html" style="color:#22d3ee;">Setup / Wiring</a>
+  &nbsp;·&nbsp;<a href="shopping.html" style="color:#22d3ee;">Shopping List</a>
+  &nbsp;·&nbsp;<a href="downloads.html" style="color:#22d3ee;">Downloads</a>
+</nav>
+
+<header>
+  <h1>GHAR RAKSHA <span>// HUMAN PRESENCE RADAR</span></h1>
+  <span id="modeBadge" class="badge">DEMO MODE</span>
+  <span class="clock" id="clock">--:--:--</span>
+</header>
+
+<div id="demoBanner"><b>DEMO MODE</b> — Nakli data, koi asal sensor nahi. Neeche ghoomta hua banda sirf ek simulation hai, asal chor nahi. Asal detection ke liye ESP32 + sensor lagao aur LIVE MODE on karo.</div>
+<div id="liveBanner"><b>ESP32 connect nahi</b> — IP check karo. ESP32 aur ye phone/laptop aik hi WiFi par hon, aur ESP32 on ho.</div>
+
+<div class="layout">
+  <!-- ======= MAP ======= -->
+  <div class="panel">
+    <h2>Ghar ka Naqsha — Live Radar</h2>
+    <canvas id="map" width="640" height="500"></canvas>
+    <div class="legend">
+      <span><i style="background:#ef4444"></i>Banda (presence)</span>
+      <span><i style="background:#f59e0b"></i>Movement</span>
+      <span><i style="background:#22c55e"></i>Safe / khali</span>
+      <span><i style="background:#22d3ee"></i>Sensor</span>
+    </div>
+  </div>
+
+  <!-- ======= SIDE PANELS ======= -->
+  <div>
+    <div class="panel" style="margin-bottom:10px">
+      <h2>System Mode</h2>
+      <div class="seg">
+        <button id="btnDemo" class="active" onclick="setSource('demo')">DEMO (nakli)</button>
+        <button id="btnLive" onclick="setSource('live')">LIVE (ESP32)</button>
+      </div>
+      <div class="modeRow">
+        <span id="modeLabel" class="disarmed">DISARMED</span>
+        <span id="sirenBox">SIREN ON</span>
+      </div>
+      <div class="btnRow">
+        <button id="btnArm" class="danger" onclick="setArmed(true)">Arm karo (raat ko)</button>
+        <button id="btnDisarm" onclick="setArmed(false)">Disarm karo</button>
+      </div>
+      <div class="hint">Armed = raat ko ya ghar se bahar jate waqt. Armed honay par kisi zone mein banda aate hi siren bajega, light jalegi aur Telegram alert aayega (LIVE mode mein).</div>
+
+      <h2>Zones</h2>
+      <div id="zones"></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:10px">
+      <h2>ESP32 Connection (LIVE ke liye)</h2>
+      <div class="field">
+        <input id="espIp" type="text" value="192.168.1.100" spellcheck="false" autocomplete="off">
+        <button onclick="applyIp()">Lagao</button>
+      </div>
+      <div class="hint">ESP32 ka IP daalo (wo IP jo Arduino Serial Monitor mein WiFi connect honay par nazar aata hai). Dashboard har 1 second mein <b>/status</b> se zone haal poochta hai. Port 80 hai, is liye sirf IP likhna kaafi hai.</div>
+      <div class="hint" id="connState">Connection: —</div>
+    </div>
+
+    <div class="panel">
+      <h2>Alert Log</h2>
+      <ul id="log"></ul>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <b>Sach baat:</b> Ye dashboard sirf dikhata hai — asal detection sensors karte hain. Har kamray / zone ko apna sensor chahiye; ek sensor poora ghar nahi dekh sakta. Radar moti deewar (brick/concrete) ke peeche banda mushkil se dekhta hai. Demo mode mein sab kuch nakli hai.
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   GHAR RAKSHA — Human Presence Radar dashboard
+   - DEMO MODE: nakli (simulated) chor ghoomta hai, koi sensor nahi
+   - LIVE MODE: ESP32 se /status mangta hai har 1 second
+   Koi internet / CDN nahi chahiye — sab kuch is file mein hai.
+   ============================================================ */
+
+// ---- Zones: naqshay par har zone ka rectangle (canvas 640x500) ----
+var ZONES = [
+  { id: 0, name: "Main Gate",  x: 270, y: 400, w: 100, h: 55,  sensor: { x: 320, y: 427 },
+    blip: { x: 320, y: 428 } },
+  { id: 1, name: "Sehan",      x: 40,  y: 220, w: 560, h: 180, sensor: { x: 320, y: 310 },
+    blip: { x: 320, y: 310 } },
+  { id: 2, name: "Kamra 1",    x: 40,  y: 40,  w: 240, h: 160, sensor: { x: 160, y: 60 },
+    blip: { x: 160, y: 120 } },
+  { id: 3, name: "Kamra 2",    x: 360, y: 40,  w: 240, h: 160, sensor: { x: 480, y: 60 },
+    blip: { x: 480, y: 120 } }
+];
+
+// ---- Demo mein nakli chor ka rasta (waypoints), pause seconds ke sath ----
+var DEMO_PATH = [
+  { x: 320, y: 486, pause: 3 },  // bahar, gate ke samne
+  { x: 320, y: 428, pause: 1 },  // Main Gate
+  { x: 320, y: 320, pause: 1 },  // Sehan
+  { x: 160, y: 310, pause: 0 },
+  { x: 160, y: 210, pause: 1 },  // Kamra 1 ka darwaza
+  { x: 160, y: 120, pause: 5 },  // Kamra 1 ke andar (rukta hai)
+  { x: 160, y: 210, pause: 0 },
+  { x: 320, y: 320, pause: 1 },  // wapas Sehan
+  { x: 480, y: 210, pause: 1 },  // Kamra 2 ka darwaza
+  { x: 480, y: 120, pause: 5 },  // Kamra 2 ke andar
+  { x: 480, y: 210, pause: 0 },
+  { x: 320, y: 320, pause: 1 },
+  { x: 320, y: 428, pause: 1 },  // wapas Gate
+  { x: 320, y: 486, pause: 4 }   // bahar nikal gaya
+];
+
+var canvas = document.getElementById("map");
+var ctx = canvas.getContext("2d");
+
+var source = "demo";          // "demo" ya "live"
+var armed = false;
+var espIp = "192.168.1.100";
+var liveOk = false;
+var liveTimer = null;
+var sirenOn = false;
+
+// Har zone ki haalat: { presence, motion, door }
+var zoneState = ZONES.map(function () { return { presence: false, motion: false, door: false }; });
+// Demo mein banda kahan hai:
+var person = { x: 320, y: 486, visible: true, moving: false };
+var demoIdx = 0, demoPauseUntil = 0;
+var sweepAngle = 0;
+var lastZoneOfPerson = -1;    // alert sirf zone badalnay par
+
+/* ---------------- Clock ---------------- */
+function tickClock() {
+  var d = new Date();
+  function p(n) { return (n < 10 ? "0" : "") + n; }
+  document.getElementById("clock").textContent =
+    p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ---------------- Alert log ---------------- */
+function log(msg, isAlert) {
+  var ul = document.getElementById("log");
+  var li = document.createElement("li");
+  if (isAlert) li.className = "alert";
+  var d = new Date();
+  function p(n) { return (n < 10 ? "0" : "") + n; }
+  var t = document.createElement("span");
+  t.className = "t";
+  t.textContent = p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  li.appendChild(t);
+  li.appendChild(document.createTextNode(msg));
+  ul.insertBefore(li, ul.firstChild);
+  while (ul.children.length > 50) ul.removeChild(ul.lastChild);
+}
+
+/* ---------------- Zone list (side panel) ---------------- */
+function renderZoneList() {
+  var box = document.getElementById("zones");
+  box.innerHTML = "";
+  ZONES.forEach(function (z, i) {
+    var s = zoneState[i];
+    var row = document.createElement("div");
+    row.className = "zoneRow";
+    var dotClass = "dot", stateText = "Khali — safe";
+    if (source === "live" && !liveOk) { dotClass = "dot grey"; stateText = "Maloom nahi (ESP32 off?)"; }
+    else if (s.presence) { row.className += " alert"; dotClass = "dot red"; stateText = "BANDA MAUJOOD"; }
+    else if (s.motion) { row.className += " warn"; dotClass = "dot amber"; stateText = "Movement"; }
+    if (s.door) stateText += " | Darwaza khula";
+    row.innerHTML = '<span class="' + dotClass + '"></span>' +
+      '<span class="zoneName">' + z.name + '</span>' +
+      '<span class="zoneState">' + stateText + '</span>';
+    box.appendChild(row);
+  });
+}
+
+/* ---------------- Mode / Arm ---------------- */
+function setArmed(on) {
+  armed = on;
+  var label = document.getElementById("modeLabel");
+  label.textContent = on ? "ARMED" : "DISARMED";
+  label.className = on ? "armed" : "disarmed";
+  document.getElementById("btnArm").disabled = on;
+  document.getElementById("btnDisarm").disabled = !on;
+  if (!on) setSiren(false);
+  log(on ? "System ARMED — ab koi zone trigger hua to siren + alert."
+         : "System DISARMED — siren band, sirf nazar rakhi ja rahi hai.", false);
+  if (source === "live" && liveOk) {
+    // ESP32 ko bhi arm/disarm bhejo (jawab na bhi aaye to dashboard state rehti hai)
+    fetch("http://" + espIp + (on ? "/arm" : "/disarm"), { method: "POST" })
+      .catch(function () { /* status poll agli baar haal bata dega */ });
+  }
+}
+
+function setSiren(on) {
+  sirenOn = on;
+  document.getElementById("sirenBox").style.display = on ? "inline-block" : "none";
+}
+
+function setSource(src) {
+  source = src;
+  document.getElementById("btnDemo").className = src === "demo" ? "active" : "";
+  document.getElementById("btnLive").className = src === "live" ? "active" : "";
+  var badge = document.getElementById("modeBadge");
+  badge.textContent = src === "demo" ? "DEMO MODE" : "LIVE MODE";
+  badge.className = "badge" + (src === "live" ? " live" : "");
+  document.getElementById("demoBanner").style.display = src === "demo" ? "block" : "none";
+  document.getElementById("liveBanner").style.display = "none";
+  // Zone state reset
+  zoneState = ZONES.map(function () { return { presence: false, motion: false, door: false }; });
+  lastZoneOfPerson = -1;
+  setSiren(false);
+  person.visible = (src === "demo");
+  if (src === "live") {
+    log("LIVE MODE — ESP32 " + espIp + " se /status manga ja raha hai (har 1 sec).");
+    startLivePolling();
+  } else {
+    stopLivePolling();
+    liveOk = false;
+    document.getElementById("connState").textContent = "Connection: DEMO (koi ESP32 nahi)";
+    log("DEMO MODE — nakli chor simulation chal rahi hai. Ye asal detection NAHI hai.");
+    // Demo dobara gate se shuru
+    demoIdx = 0; demoPauseUntil = 0; person.x = 320; person.y = 486; person.moving = false;
+  }
+  renderZoneList();
+}
+
+function applyIp() {
+  var v = document.getElementById("espIp").value.trim();
+  if (!v) { alert("ESP32 ka IP likho, masalan 192.168.1.100"); return; }
+  espIp = v;
+  log("ESP32 IP set: " + espIp);
+  if (source === "live") { stopLivePolling(); startLivePolling(); }
+}
+
+/* ---------------- LIVE polling ---------------- */
+function startLivePolling() {
+  stopLivePolling();
+  pollOnce();
+  liveTimer = setInterval(pollOnce, 1000);
+}
+function stopLivePolling() {
+  if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+}
+function pollOnce() {
+  var controller = new AbortController();
+  var timeout = setTimeout(function () { controller.abort(); }, 2500);
+  fetch("http://" + espIp + "/status", { signal: controller.signal })
+    .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+    .then(function (data) {
+      clearTimeout(timeout);
+      if (!liveOk) { liveOk = true; log("ESP32 connect ho gaya (" + espIp + ")."); }
+      document.getElementById("liveBanner").style.display = "none";
+      document.getElementById("connState").textContent = "Connection: OK — " + espIp;
+      applyLiveData(data);
+    })
+    .catch(function () {
+      clearTimeout(timeout);
+      if (liveOk) { liveOk = false; log("ESP32 se rabta toot gaya — IP / WiFi check karo.", true); }
+      document.getElementById("liveBanner").style.display = "block";
+      document.getElementById("connState").textContent = "Connection: FAIL — " + espIp + " jawab nahi de raha";
+      renderZoneList();
+    });
+}
+function applyLiveData(data) {
+  // ESP32 se armed state bhi aa sakti hai — dashboard us se match ho jaye
+  if (typeof data.armed === "boolean" && data.armed !== armed) {
+    armed = data.armed;
+    var label = document.getElementById("modeLabel");
+    label.textContent = armed ? "ARMED" : "DISARMED";
+    label.className = armed ? "armed" : "disarmed";
+    document.getElementById("btnArm").disabled = armed;
+    document.getElementById("btnDisarm").disabled = !armed;
+  }
+  var anyPresence = false;
+  if (Array.isArray(data.zones)) {
+    data.zones.forEach(function (z, i) {
+      if (i >= zoneState.length) return;
+      var prev = zoneState[i];
+      zoneState[i] = {
+        presence: !!z.presence,
+        motion: !!z.motion,
+        door: !!z.door_open
+      };
+      if (zoneState[i].presence) anyPresence = true;
+      // Naya trigger: pehle nahi tha, ab hai
+      if (zoneState[i].presence && !prev.presence) {
+        if (armed) {
+          log("ALERT: " + ZONES[i].name + " mein banda! Siren + light + Telegram alert.", true);
+          setSiren(true);
+        } else {
+          log("Info: " + ZONES[i].name + " mein movement (system disarmed hai).");
+        }
+      }
+      if (zoneState[i].door && !prev.door) {
+        log((armed ? "ALERT: " : "Info: ") + ZONES[i].name + " ka darwaza khula.", armed);
+      }
+    });
+  }
+  if (!anyPresence && sirenOn) setSiren(false);
+  renderZoneList();
+}
+
+/* ---------------- DEMO simulation ---------------- */
+function zoneAt(x, y) {
+  for (var i = 0; i < ZONES.length; i++) {
+    var z = ZONES[i];
+    if (x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h) return i;
+  }
+  return -1; // bahar
+}
+function stepDemo(dt) {
+  var now = Date.now();
+  var target = DEMO_PATH[demoIdx];
+  var dx = target.x - person.x, dy = target.y - person.y;
+  var dist = Math.sqrt(dx * dx + dy * dy);
+  var speed = 55; // pixels per second
+  if (dist < 3) {
+    person.moving = false;
+    if (demoPauseUntil === 0) demoPauseUntil = now + (target.pause || 0) * 1000;
+    if (now >= demoPauseUntil) {
+      demoIdx = (demoIdx + 1) % DEMO_PATH.length;
+      demoPauseUntil = 0;
+    }
+  } else {
+    person.moving = true;
+    var step = speed * dt;
+    if (step >= dist) { person.x = target.x; person.y = target.y; }
+    else { person.x += dx / dist * step; person.y += dy / dist * step; }
+  }
+  // Zone haalat update
+  var zi = zoneAt(person.x, person.y);
+  zoneState = ZONES.map(function () { return { presence: false, motion: false, door: false }; });
+  if (zi >= 0) {
+    zoneState[zi].presence = true;
+    zoneState[zi].motion = person.moving;
+    // Gate / kamra darwaza "khula" dikhate hain jab banda us zone mein ho (demo)
+    if (zi === 0 || zi === 2 || zi === 3) zoneState[zi].door = true;
+  }
+  if (zi !== lastZoneOfPerson) {
+    if (zi >= 0) {
+      if (armed) {
+        log("ALERT (DEMO): " + ZONES[zi].name + " mein banda! (Nakli — sirf demo)", true);
+        setSiren(true);
+      } else {
+        log("Demo: banda " + ZONES[zi].name + " mein gaya. (Nakli data)");
+      }
+    } else if (lastZoneOfPerson >= 0) {
+      log("Demo: banda ghar se bahar nikal gaya.");
+      setSiren(false);
+    }
+    lastZoneOfPerson = zi;
+    renderZoneList();
+  }
+}
+
+/* ---------------- Drawing ---------------- */
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Background grid
+  ctx.strokeStyle = "rgba(34,211,238,0.06)";
+  ctx.lineWidth = 1;
+  for (var gx = 0; gx <= 640; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, 500); ctx.stroke(); }
+  for (var gy = 0; gy <= 500; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(640, gy); ctx.stroke(); }
+
+  // Boundary wall (neeche gate ke liye gap)
+  ctx.strokeStyle = "#155e75"; ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(20, 460); ctx.lineTo(20, 20); ctx.lineTo(620, 20); ctx.lineTo(620, 460);
+  ctx.lineTo(370, 460); ctx.moveTo(270, 460); ctx.lineTo(20, 460);
+  ctx.stroke();
+  ctx.fillStyle = "#7fa8b3"; ctx.font = "11px sans-serif";
+  ctx.fillText("BOUNDARY WALL", 26, 34);
+
+  // Radar rings + sweep (Sehan ke centre se)
+  var cx = 320, cy = 310;
+  ctx.strokeStyle = "rgba(34,211,238,0.18)";
+  [60, 120, 180, 240].forEach(function (r) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  });
+  // Sweep wedge
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(sweepAngle);
+  var wedge = ctx.createLinearGradient(0, 0, 250, 0);
+  wedge.addColorStop(0, "rgba(34,211,238,0.35)");
+  wedge.addColorStop(1, "rgba(34,211,238,0)");
+  ctx.fillStyle = wedge;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 250, -0.35, 0); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(34,211,238,0.8)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(250, 0); ctx.stroke();
+  ctx.restore();
+
+  // Zones
+  ZONES.forEach(function (z, i) {
+    var s = zoneState[i];
+    var active = (source === "live" && !liveOk) ? false : (s.presence || s.motion);
+    ctx.fillStyle = s.presence ? "rgba(239,68,68,0.18)"
+      : s.motion ? "rgba(245,158,11,0.12)" : "rgba(34,211,238,0.05)";
+    ctx.fillRect(z.x, z.y, z.w, z.h);
+    ctx.strokeStyle = s.presence ? "#ef4444" : s.motion ? "#f59e0b" : "#1c3d4a";
+    ctx.lineWidth = s.presence ? 2.5 : 1.5;
+    ctx.strokeRect(z.x, z.y, z.w, z.h);
+    ctx.fillStyle = s.presence ? "#fca5a5" : "#a5e8f3";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText(z.name, z.x + 8, z.y + 20);
+    ctx.font = "11px sans-serif";
+    ctx.fillStyle = "#7fa8b3";
+    var label = (source === "live" && !liveOk) ? "—" : s.presence ? "BANDA!" : s.motion ? "movement" : "khali";
+    ctx.fillText(label, z.x + 8, z.y + 37);
+    // Sensor dot
+    ctx.fillStyle = "#22d3ee";
+    ctx.beginPath(); ctx.arc(z.sensor.x, z.sensor.y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(34,211,238,0.5)";
+    ctx.beginPath(); ctx.arc(z.sensor.x, z.sensor.y, 10, 0, Math.PI * 2); ctx.stroke();
+  });
+
+  // Gate opening label + bahar ka ilaqa
+  ctx.fillStyle = "#7fa8b3"; ctx.font = "11px sans-serif";
+  ctx.fillText("BAHAR (gali)", 280, 490);
+
+  // Person dot(s)
+  var dots = [];
+  if (source === "demo" && person.visible) {
+    dots.push({ x: person.x, y: person.y });
+  } else if (source === "live" && liveOk) {
+    ZONES.forEach(function (z, i) {
+      if (zoneState[i].presence) dots.push({ x: z.blip.x, y: z.blip.y });
+    });
+  }
+  var pulse = 8 + Math.sin(Date.now() / 180) * 3;
+  dots.forEach(function (d) {
+    ctx.fillStyle = "rgba(239,68,68,0.25)";
+    ctx.beginPath(); ctx.arc(d.x, d.y, pulse + 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.arc(d.x, d.y, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(d.x, d.y, 8, 0, Math.PI * 2); ctx.stroke();
+  });
+
+  // DEMO watermark on map
+  if (source === "demo") {
+    ctx.fillStyle = "rgba(245,158,11,0.85)";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillText("DEMO — NAKLI DATA", 470, 490);
+  }
+}
+
+/* ---------------- Main loop ---------------- */
+var lastT = Date.now();
+function loop() {
+  var now = Date.now();
+  var dt = Math.min((now - lastT) / 1000, 0.1);
+  lastT = now;
+  sweepAngle += dt * 1.2;
+  if (sweepAngle > Math.PI * 2) sweepAngle -= Math.PI * 2;
+  if (source === "demo") stepDemo(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ---------------- Start ---------------- */
+renderZoneList();
+setArmed(false);
+log("Ghar Raksha dashboard khul gaya. DEMO MODE mein hai — nakli chor gate se andar aayega, sehan aur kamron mein ghoomega.");
+log("Asal system ke liye: ESP32 + sensor lagao, phir LIVE MODE dabao aur ESP32 ka IP likho.");
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
