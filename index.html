@@ -1,10 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ur">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ghar Raksha — Ghar ki Hifazat, Camera ke Baghair</title>
 <meta name="description" content="Ghar Raksha: ESP32 + radar sensors se ghar ki hifazat. CCTV se bachne wala bhi sensor se nahi bach sakta. Poora plan, code, wiring guide aur shopping list — free.">
+<link rel="canonical" href="https://ghar-raksha.pages.dev/">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ghar Raksha">
+<meta property="og:title" content="Ghar Raksha — Ghar ki Hifazat, Camera ke Baghair">
+<meta property="og:description" content="ESP32 + radar sensors se ghar ki hifazat. CCTV se bachne wala bhi sensor se nahi bach sakta. Poora plan, code, wiring guide aur shopping list — free.">
+<meta property="og:url" content="https://ghar-raksha.pages.dev/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ghar Raksha — Ghar ki Hifazat, Camera ke Baghair">
+<meta name="twitter:description" content="ESP32 + radar sensors se ghar ki hifazat. Poora plan, code, wiring guide aur shopping list — free.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Ghar Raksha",
+      "url": "https://ghar-raksha.pages.dev/",
+      "inLanguage": "ur",
+      "description": "DIY home security system: ESP32 + PIR, radar aur mmWave sensors se ghar ki hifazat, CCTV ke baghair. Poora plan, code, wiring guide aur shopping list free."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Ghar Raksha banane mein kitna kharcha aata hai?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Starter (1 zone) ~Rs 5,500, Full (3 zones + LD2410) ~Rs 8,000–8,500, aur Full + GSM + backup ~Rs 13,000. Qeematein 25 Nov 2026 ko Pakistan ki dukaanon se check ki hui hain. LD2410 ki qeemat andaza hai, verify nahi hui."}
+        },
+        {
+          "@type": "Question",
+          "name": "Kya ye system CCTV ke baghair kaam karta hai?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Ji. System camera par nahi, sensors par chalta hai — PIR, radar aur mmWave sensor harkat pakarte hain, chehre ki zaroorat nahi. CCTV sirf saboot ke liye sath rakhna behtar hai."}
+        },
+        {
+          "@type": "Question",
+          "name": "Kaunse sensors lagte hain?",
+          "acceptedAnswer": {"@type": "Answer", "text": "PIR HC-SR501, RCWL-0516 microwave radar, HLK-LD2410 mmWave sensor aur MC-38 magnetic door sensor. Aik hi ESP32 chaaron zones chala leta hai."}
+        },
+        {
+          "@type": "Question",
+          "name": "Mahinaana kharcha kitna hai?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Rs 0. Telegram alert WiFi se free hai, koi subscription nahi. GSM use karo to sirf SMS ka kharcha hota hai."}
+        },
+        {
+          "@type": "Question",
+          "name": "Dashboard ka DEMO MODE kya hai?",
+          "acceptedAnswer": {"@type": "Answer", "text": "DEMO MODE mein dashboard nakli (simulated) data dikhata hai — koi asal sensor nahi hota. LIVE MODE mein ye ESP32 se jor kar asal zones, arm/disarm aur alerts dikhata hai."}
+        },
+        {
+          "@type": "Question",
+          "name": "Firmware kahan se download karoon?",
+          "acceptedAnswer": {"@type": "Answer", "text": "Downloads page par source code (home_guard.ino) aur tayyar compiled firmware (.bin) dono hain. Source code recommended hai, kyun ke us mein apna WiFi naam aur password bharna hota hai."}
+        }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -99,6 +158,22 @@
     cross-check ki hui. Poori report project mein <code>VERIFICATION.md</code>
     mein hai — aur jo cheezein baghair hardware ke verify nahi ho sakti
     (asal sensor, Telegram end-to-end), wo bhi wahan saaf likhi hain.
+  </div>
+
+  <h2>Aksar pooche gaye sawal (FAQ)</h2>
+  <div class="faq">
+    <h3>Ghar Raksha banane mein kitna kharcha aata hai?</h3>
+    <p>Starter (1 zone) ~Rs 5,500, Full (3 zones + LD2410) ~Rs 8,000–8,500, aur Full + GSM + backup ~Rs 13,000. Qeematein 25 Nov 2026 ko Pakistan ki dukaanon se check ki hui hain. LD2410 ki qeemat andaza hai, verify nahi hui.</p>
+    <h3>Kya ye system CCTV ke baghair kaam karta hai?</h3>
+    <p>Ji. System camera par nahi, sensors par chalta hai — PIR, radar aur mmWave sensor harkat pakarte hain, chehre ki zaroorat nahi. CCTV sirf saboot ke liye sath rakhna behtar hai.</p>
+    <h3>Kaunse sensors lagte hain?</h3>
+    <p>PIR HC-SR501, RCWL-0516 microwave radar, HLK-LD2410 mmWave sensor aur MC-38 magnetic door sensor. Aik hi ESP32 chaaron zones chala leta hai.</p>
+    <h3>Mahinaana kharcha kitna hai?</h3>
+    <p>Rs 0. Telegram alert WiFi se free hai, koi subscription nahi. GSM use karo to sirf SMS ka kharcha hota hai.</p>
+    <h3>Dashboard ka DEMO MODE kya hai?</h3>
+    <p>DEMO MODE mein dashboard nakli (simulated) data dikhata hai — koi asal sensor nahi hota. LIVE MODE mein ye ESP32 se jor kar asal zones, arm/disarm aur alerts dikhata hai.</p>
+    <h3>Firmware kahan se download karoon?</h3>
+    <p><a href="downloads.html">Downloads page</a> par source code (home_guard.ino) aur tayyar compiled firmware (.bin) dono hain. Source code recommended hai, kyun ke us mein apna WiFi naam aur password bharna hota hai.</p>
   </div>
 
   <h2>Shuru karo</h2>
